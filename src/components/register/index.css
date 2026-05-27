@@ -1,0 +1,145 @@
+.register-main-container{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#e8f5e9;
+  padding:20px;
+}
+
+.register-card{
+  width:100%;
+  max-width:1100px;
+  background:white;
+  border-radius:20px;
+  display:flex;
+  overflow:hidden;
+  box-shadow:0 6px 20px rgba(0,0,0,0.15);
+}
+
+.register-left-section{
+  width:50%;
+  background:#2e7d32;
+  color:white;
+  padding:40px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.register-heading{
+  font-size:42px;
+  margin-bottom:20px;
+}
+
+.register-description{
+  font-size:18px;
+  line-height:1.7;
+  margin-bottom:30px;
+}
+
+.register-image{
+  width:100%;
+  border-radius:20px;
+  height:320px;
+  object-fit:cover;
+}
+
+.register-right-section{
+  width:50%;
+  padding:50px;
+}
+
+.form-heading{
+  font-size:36px;
+  color:#1b5e20;
+  margin-bottom:30px;
+}
+
+.register-form{
+  display:flex;
+  flex-direction:column;
+}
+
+.label{
+  margin-bottom:8px;
+  font-weight:600;
+  color:#333;
+}
+
+.input{
+  height:50px;
+  padding-left:15px;
+  margin-bottom:20px;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  outline:none;
+  font-size:16px;
+}
+
+.input:focus{
+  border:2px solid #2e7d32;
+}
+
+.register-button{
+  height:50px;
+  border:none;
+  background:#2e7d32;
+  color:white;
+  font-size:18px;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.register-button:hover{
+  background:#1b5e20;
+}
+
+.error-message{
+  color:red;
+  font-size:15px;
+  margin-bottom:10px;
+}
+
+.success-message{
+  color:green;
+  font-size:15px;
+  margin-bottom:10px;
+}
+
+.login-text{
+  margin-top:20px;
+  text-align:center;
+}
+
+.link{
+  color:#2e7d32;
+  margin-left:6px;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+@media screen and (max-width:768px){
+
+  .register-card{
+    flex-direction:column;
+  }
+
+  .register-left-section{
+    width:100%;
+  }
+
+  .register-right-section{
+    width:100%;
+    padding:30px;
+  }
+
+  .register-heading{
+    font-size:32px;
+  }
+
+  .form-heading{
+    font-size:28px;
+  }
+}

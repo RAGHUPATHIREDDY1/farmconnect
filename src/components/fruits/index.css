@@ -1,0 +1,125 @@
+.fruits-container{
+  padding:30px;
+  background:#f5fff5;
+  min-height:100vh;
+}
+
+.main-heading{
+  text-align:center;
+  color:#1b5e20;
+  margin-bottom:20px;
+}
+
+.search-input{
+  display:block;
+
+  width:350px;
+
+  height:45px;
+
+  margin:0 auto 30px auto;
+
+  padding-left:15px;
+
+  border:1px solid #ccc;
+
+  border-radius:8px;
+
+  outline:none;
+
+  font-size:16px;
+}
+
+.search-input:focus{
+  border-color:#2e7d32;
+}
+
+.fruits-list-container{
+  display:grid;
+
+  grid-template-columns:
+  repeat(auto-fill,minmax(280px,1fr));
+
+  gap:25px;
+}
+
+.fruit-card{
+  background:white;
+
+  border-radius:12px;
+
+  overflow:hidden;
+
+  box-shadow:
+  0 2px 10px rgba(0,0,0,0.1);
+
+  transition:0.3s;
+}
+
+.fruit-card:hover{
+  transform:translateY(-5px);
+}
+
+.fruit-image{
+  width:100%;
+
+  height:220px;
+
+  object-fit:cover;
+}
+
+.fruit-details{
+  padding:15px;
+}
+
+.fruit-name{
+  color:#1b5e20;
+  margin-bottom:10px;
+}
+
+.fruit-price{
+  font-size:20px;
+  font-weight:bold;
+  color:#ff6f00;
+}
+
+.fruit-description{
+  color:#666;
+  margin:10px 0;
+}
+
+.buy-button{
+  width:100%;
+
+  background:#2e7d32;
+
+  color:white;
+
+  border:none;
+
+  padding:12px;
+
+  border-radius:8px;
+
+  cursor:pointer;
+
+  font-size:15px;
+}
+
+.buy-button:hover{
+  background:#1b5e20;
+}
+
+.empty-text{
+  text-align:center;
+  width:100%;
+  color:red;
+}
+
+@media screen and
+(max-width:768px){
+
+  .search-input{
+    width:100%;
+  }
+}

@@ -1,0 +1,47 @@
+.not-found-container{
+  min-height:100vh;
+
+  display:flex;
+  flex-direction:column;
+
+  justify-content:center;
+  align-items:center;
+
+  background:#f5fff5;
+  padding:20px;
+}
+
+.not-found-image{
+  width:250px;
+  margin-bottom:20px;
+}
+
+.not-found-heading{
+  color:#1b5e20;
+  font-size:42px;
+  margin-bottom:10px;
+}
+
+.not-found-description{
+  color:#555;
+  font-size:18px;
+  margin-bottom:25px;
+  text-align:center;
+}
+
+.home-button{
+  border:none;
+  background:#2e7d32;
+  color:white;
+
+  padding:12px 24px;
+
+  border-radius:10px;
+  cursor:pointer;
+
+  font-size:16px;
+}
+
+.home-button:hover{
+  background:#1b5e20;
+}

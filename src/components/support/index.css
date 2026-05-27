@@ -1,0 +1,21 @@
+.page-container{
+  min-height:80vh;
+
+  padding:50px;
+
+  background:#f5fff5;
+}
+
+.page-container h1{
+  color:#1b5e20;
+
+  margin-bottom:20px;
+}
+
+.page-container p{
+  font-size:18px;
+
+  line-height:1.8;
+
+  color:#555;
+}
