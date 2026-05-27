@@ -2,6 +2,7 @@ import {useEffect, useState} from "react"
 import {useNavigate} from "react-router-dom"
 
 import Header from "../header"
+import Footer from "../Footer"
 
 import "./index.css"
 
@@ -166,7 +167,9 @@ const Cart = () => {
         )}
 
       </div>
-
+      <>
+      <Footer />
+       </>
     </>
   )
 }
