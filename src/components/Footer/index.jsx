@@ -1,29 +1,30 @@
-// src/components/Footer/index.jsx
+import { Link } from "react-router-dom";
 
-import {Link} from "react-router-dom"
-
-import "./index.css"
+import "./index.css";
 
 const Footer = () => {
   return (
     <footer className="footer-section">
 
-      <div className="footer-top">
+      <div className="footer-container">
 
-        <div>
+        <div className="footer-brand">
 
           <h2 className="footer-logo">
-            FarmConnect
+            🌾 FarmConnect
           </h2>
 
           <p className="footer-description">
-            Connecting Farmers & Buyers
-            Across India
+            Connecting farmers and buyers across India with
+            fresh products, trusted livestock, and modern
+            farming equipment.
           </p>
 
         </div>
 
-        <div className="footer-links">
+        <div className="footer-column">
+
+          <h3>Company</h3>
 
           <Link to="/about" className="footer-link">
             About Us
@@ -37,6 +38,12 @@ const Footer = () => {
             Support
           </Link>
 
+        </div>
+
+        <div className="footer-column">
+
+          <h3>Legal</h3>
+
           <Link
             to="/privacy-policy"
             className="footer-link"
@@ -44,18 +51,39 @@ const Footer = () => {
             Privacy Policy
           </Link>
 
+          <Link
+            to="/terms"
+            className="footer-link"
+          >
+            Terms & Conditions
+          </Link>
+
+        </div>
+
+        <div className="footer-column">
+
+          <h3>Contact</h3>
+
+          <p>📧 support@farmconnect.com</p>
+
+          <p>📞 +91 93467 70000</p>
+
+          <p>📍 Hyderabad, India</p>
+
         </div>
 
       </div>
 
-      <hr />
+      <div className="footer-bottom">
 
-      <p className="copyright">
-        © 2026 FarmConnect. All Rights Reserved.
-      </p>
+        <p>
+          © 2026 FarmConnect. All Rights Reserved.
+        </p>
+
+      </div>
 
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;

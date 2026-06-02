@@ -87,43 +87,55 @@ const Fruits = () => {
     )
 
   return (
-    <>
-      <Header />
+  <>
+    <Header />
 
-      <div className="fruits-container">
+    <div className="fruits-container">
+
+      <section className="fruits-hero">
 
         <h1 className="main-heading">
-          Fresh Fruits
+          🍎 Fresh Fruits Collection
         </h1>
+
+        <p className="hero-subtitle">
+          Handpicked fresh fruits directly from trusted farmers.
+        </p>
+
+      </section>
+
+      <div className="search-container">
 
         <input
           type="search"
-          placeholder="Search Fruits..."
+          placeholder="Search Fresh Fruits..."
           className="search-input"
           value={searchInput}
           onChange={event =>
-            setSearchInput(
-              event.target.value
-            )
+            setSearchInput(event.target.value)
           }
         />
 
-        <div className="fruits-list-container">
+      </div>
 
-          {filteredList.length === 0 ? (
+      <div className="fruits-list-container">
 
-            <h2 className="empty-text">
-              No Fruits Found
-            </h2>
+        {filteredList.length === 0 ? (
 
-          ) : (
+          <div className="empty-container">
+            <h2>No Fruits Found 🍎</h2>
+          </div>
 
-            filteredList.map(eachFruit => (
+        ) : (
 
-              <div
-                className="fruit-card"
-                key={eachFruit.id}
-              >
+          filteredList.map(eachFruit => (
+
+            <div
+              className="fruit-card"
+              key={eachFruit.id}
+            >
+
+              <div className="image-container">
 
                 <img
                   src={eachFruit.image}
@@ -131,43 +143,52 @@ const Fruits = () => {
                   className="fruit-image"
                 />
 
-                <div className="fruit-details">
-
-                  <h2 className="fruit-name">
-                    {eachFruit.name}
-                  </h2>
-
-                  <p className="fruit-price">
-                    ₹ {eachFruit.price}
-                  </p>
-
-                  <p className="fruit-description">
-                    {eachFruit.description}
-                  </p>
-
-                  <button
-                    className="buy-button"
-                    onClick={() =>
-                      onClickBuy(eachFruit)
-                    }
-                  >
-                    Add To Cart
-                  </button>
-
-                </div>
+                <span className="badge">
+                  Fresh
+                </span>
 
               </div>
-            ))
-          )}
 
-        </div>
+              <div className="fruit-details">
+
+                <div className="rating">
+                  ⭐ 4.8
+                </div>
+
+                <h2 className="fruit-name">
+                  {eachFruit.name}
+                </h2>
+
+                <p className="fruit-price">
+                  ₹ {eachFruit.price}/kg
+                </p>
+
+                <p className="fruit-description">
+                  {eachFruit.description}
+                </p>
+
+                <button
+                  className="buy-button"
+                  onClick={() =>
+                    onClickBuy(eachFruit)
+                  }
+                >
+                  Add To Cart 🛒
+                </button>
+
+              </div>
+
+            </div>
+          ))
+        )}
 
       </div>
-       <>
-      <Footer />
-       </>
-    </>
-  )
+
+    </div>
+
+    <Footer />
+  </>
+)
 }
 
 export default Fruits

@@ -78,43 +78,55 @@ const Animals = () => {
     )
 
   return (
-    <>
-      <Header />
+  <>
+    <Header />
 
-      <div className="animals-container">
+    <div className="animals-container">
+
+      <section className="animals-hero">
 
         <h1 className="main-heading">
-          Farm Animals
+          🐄 Healthy Farm Animals
         </h1>
+
+        <p className="hero-subtitle">
+          Browse quality livestock from trusted farmers across India.
+        </p>
+
+      </section>
+
+      <div className="search-container">
 
         <input
           type="search"
-          placeholder="Search Animals..."
+          placeholder="Search Farm Animals..."
           className="search-input"
           value={searchInput}
           onChange={event =>
-            setSearchInput(
-              event.target.value
-            )
+            setSearchInput(event.target.value)
           }
         />
 
-        <div className="animals-list-container">
+      </div>
 
-          {filteredAnimals.length === 0 ? (
+      <div className="animals-list-container">
 
-            <h2 className="empty-text">
-              No Animals Found
-            </h2>
+        {filteredAnimals.length === 0 ? (
 
-          ) : (
+          <div className="empty-container">
+            <h2>No Animals Found 🐄</h2>
+          </div>
 
-            filteredAnimals.map(eachAnimal => (
+        ) : (
 
-              <div
-                className="animal-card"
-                key={eachAnimal.id}
-              >
+          filteredAnimals.map(eachAnimal => (
+
+            <div
+              className="animal-card"
+              key={eachAnimal.id}
+            >
+
+              <div className="image-container">
 
                 <img
                   src={eachAnimal.image}
@@ -122,45 +134,53 @@ const Animals = () => {
                   className="animal-image"
                 />
 
-                <div className="animal-details">
-
-                  <h2 className="animal-name">
-                    {eachAnimal.name}
-                  </h2>
-
-                  <p className="animal-price">
-                    ₹ {eachAnimal.price}
-                  </p>
-
-                  <p className="animal-description">
-                    {eachAnimal.description}
-                  </p>
-
-                  <button
-                    className="buy-button"
-                    onClick={() =>
-                      onClickBuy(eachAnimal)
-                    }
-                  >
-                    Add To Cart
-                  </button>
-
-                </div>
+                <span className="badge">
+                  Verified
+                </span>
 
               </div>
 
-            ))
-          )}
+              <div className="animal-details">
 
-        </div>
+                <div className="rating">
+                  ⭐ 4.9
+                </div>
+
+                <h2 className="animal-name">
+                  {eachAnimal.name}
+                </h2>
+
+                <p className="animal-price">
+                  ₹ {eachAnimal.price}
+                </p>
+
+                <p className="animal-description">
+                  {eachAnimal.description}
+                </p>
+
+                <button
+                  className="buy-button"
+                  onClick={() =>
+                    onClickBuy(eachAnimal)
+                  }
+                >
+                  Add To Cart 🛒
+                </button>
+
+              </div>
+
+            </div>
+
+          ))
+        )}
 
       </div>
-      <>
-      <Footer />
-       </>
 
-    </>
-  )
+    </div>
+
+    <Footer />
+  </>
+)
 }
 
 export default Animals

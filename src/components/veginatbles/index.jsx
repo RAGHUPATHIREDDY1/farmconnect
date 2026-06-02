@@ -95,91 +95,108 @@ const Vegetables = () => {
     )
 
   return (
-    <>
-      <Header />
+  <>
+    <Header />
 
-      <div className="vegetables-container">
+    <div className="vegetables-container">
+
+      <section className="vegetables-hero">
 
         <h1 className="main-heading">
-          Fresh Vegetables
+          🥕 Fresh Vegetables Collection
         </h1>
+
+        <p className="hero-subtitle">
+          Farm-fresh vegetables delivered directly from trusted farmers.
+        </p>
+
+      </section>
+
+      <div className="search-container">
 
         <input
           type="search"
-          placeholder="Search Vegetables..."
+          placeholder="Search Fresh Vegetables..."
           className="search-input"
           value={searchInput}
           onChange={event =>
-            setSearchInput(
-              event.target.value
-            )
+            setSearchInput(event.target.value)
           }
         />
 
-        <div className="vegetables-list-container">
+      </div>
 
-          {filteredVegetables.length === 0 ? (
+      <div className="vegetables-list-container">
 
-            <h2 className="empty-text">
-              No Vegetables Found
-            </h2>
+        {filteredVegetables.length === 0 ? (
 
-          ) : (
+          <div className="empty-container">
+            <h2>No Vegetables Found 🥕</h2>
+          </div>
 
-            filteredVegetables.map(
-              eachVegetable => (
+        ) : (
 
-                <div
-                  className="vegetable-card"
-                  key={eachVegetable.id}
-                >
+          filteredVegetables.map(eachVegetable => (
 
-                  <img
-                    src={eachVegetable.image}
-                    alt={eachVegetable.name}
-                    className="vegetable-image"
-                  />
+            <div
+              className="vegetable-card"
+              key={eachVegetable.id}
+            >
 
-                  <div className="vegetable-details">
+              <div className="image-container">
 
-                    <h2 className="vegetable-name">
-                      {eachVegetable.name}
-                    </h2>
+                <img
+                  src={eachVegetable.image}
+                  alt={eachVegetable.name}
+                  className="vegetable-image"
+                />
 
-                    <p className="vegetable-price">
-                      ₹ {eachVegetable.price}
-                    </p>
+                <span className="badge">
+                  Organic
+                </span>
 
-                    <p className="vegetable-description">
-                      {eachVegetable.description}
-                    </p>
+              </div>
 
-                    <button
-                      className="buy-button"
-                      onClick={() =>
-                        onClickBuy(
-                          eachVegetable
-                        )
-                      }
-                    >
-                      Add To Cart
-                    </button>
+              <div className="vegetable-details">
 
-                  </div>
-
+                <div className="rating">
+                  ⭐ 4.8
                 </div>
-              )
-            )
-          )}
 
-        </div>
+                <h2 className="vegetable-name">
+                  {eachVegetable.name}
+                </h2>
+
+                <p className="vegetable-price">
+                  ₹ {eachVegetable.price}/kg
+                </p>
+
+                <p className="vegetable-description">
+                  {eachVegetable.description}
+                </p>
+
+                <button
+                  className="buy-button"
+                  onClick={() =>
+                    onClickBuy(eachVegetable)
+                  }
+                >
+                  Add To Cart 🛒
+                </button>
+
+              </div>
+
+            </div>
+          ))
+        )}
 
       </div>
-        <>
-      <Footer />
-       </>
-    </>
-  )
+
+    </div>
+
+    <Footer />
+  </>
+)
 }
 
 export default Vegetables

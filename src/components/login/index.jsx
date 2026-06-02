@@ -1,106 +1,96 @@
-import {useState} from "react"
-import {useNavigate, Link} from "react-router-dom"
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
-import "./index.css"
+import "./index.css";
 
 const Login = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [errorMsg, setErrorMsg] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const onSubmitLogin = event => {
-    event.preventDefault()
+    event.preventDefault();
 
-    setErrorMsg("")
+    setErrorMsg("");
 
     const users =
-      JSON.parse(localStorage.getItem("users")) || []
+      JSON.parse(localStorage.getItem("users")) || [];
 
     const validUser = users.find(
       eachUser =>
         eachUser.email === email &&
         eachUser.password === password
-    )
+    );
 
     if (validUser) {
-
       localStorage.setItem(
         "loggedUser",
         JSON.stringify(validUser)
-      )
+      );
 
-      navigate("/")
+      navigate("/");
     } else {
       setErrorMsg(
         "Invalid Email or Password"
-      )
+      );
     }
-  }
+  };
 
   return (
-    <div className="login-main-container">
+    <div className="login-page">
 
       <div className="login-card">
 
-        <div className="login-left-section">
+        <div className="login-left">
 
-          <h1 className="login-heading">
-            Welcome Back
-          </h1>
+          <h1>🌾 FarmConnect</h1>
 
-          <p className="login-description">
-            Login to explore fresh fruits,
-            vegetables, animals and modern
-            farming machines.
+          <p>
+            Connecting Farmers & Buyers
+            Across India.
           </p>
 
           <img
-            src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854"
+            src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1000"
             alt="farm"
             className="login-image"
           />
 
         </div>
 
-        <div className="login-right-section">
+        <div className="login-right">
 
-          <h1 className="form-heading">
-            Login
-          </h1>
+          <h2>Welcome Back 👋</h2>
+
+          <p className="subtitle">
+            Login to continue your journey
+          </p>
 
           <form
-            className="login-form"
             onSubmit={onSubmitLogin}
+            className="login-form"
           >
-
-            <label className="label">
-              Email
-            </label>
 
             <input
               type="email"
-              className="input"
               placeholder="Enter Email"
               value={email}
               onChange={e =>
                 setEmail(e.target.value)
               }
+              className="input-field"
             />
-
-            <label className="label">
-              Password
-            </label>
 
             <input
               type="password"
-              className="input"
               placeholder="Enter Password"
               value={password}
               onChange={e =>
                 setPassword(e.target.value)
               }
+              className="input-field"
             />
 
             {errorMsg && (
@@ -111,19 +101,21 @@ const Login = () => {
 
             <button
               type="submit"
-              className="login-button"
+              className="login-btn"
             >
               Login
             </button>
 
             <p className="register-text">
               Don't have an account?
+
               <Link
                 to="/register"
-                className="link"
+                className="register-link"
               >
                 Register
               </Link>
+
             </p>
 
           </form>
@@ -133,7 +125,7 @@ const Login = () => {
       </div>
 
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

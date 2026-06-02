@@ -93,91 +93,108 @@ const Machines = () => {
     )
 
   return (
-    <>
-      <Header />
+  <>
+    <Header />
 
-      <div className="machines-container">
+    <div className="machines-container">
+
+      <section className="machines-hero">
 
         <h1 className="main-heading">
-          Farming Machines
+          🚜 Modern Farming Machines
         </h1>
+
+        <p className="hero-subtitle">
+          Advanced agricultural equipment to improve productivity and efficiency.
+        </p>
+
+      </section>
+
+      <div className="search-container">
 
         <input
           type="search"
-          placeholder="Search Machines..."
+          placeholder="Search Farming Machines..."
           className="search-input"
           value={searchInput}
           onChange={event =>
-            setSearchInput(
-              event.target.value
-            )
+            setSearchInput(event.target.value)
           }
         />
 
-        <div className="machines-list-container">
+      </div>
 
-          {filteredMachines.length === 0 ? (
+      <div className="machines-list-container">
 
-            <h2 className="empty-text">
-              No Machines Found
-            </h2>
+        {filteredMachines.length === 0 ? (
 
-          ) : (
+          <div className="empty-container">
+            <h2>No Machines Found 🚜</h2>
+          </div>
 
-            filteredMachines.map(
-              eachMachine => (
+        ) : (
 
-                <div
-                  className="machine-card"
-                  key={eachMachine.id}
-                >
+          filteredMachines.map(eachMachine => (
 
-                  <img
-                    src={eachMachine.image}
-                    alt={eachMachine.name}
-                    className="machine-image"
-                  />
+            <div
+              className="machine-card"
+              key={eachMachine.id}
+            >
 
-                  <div className="machine-details">
+              <div className="image-container">
 
-                    <h2 className="machine-name">
-                      {eachMachine.name}
-                    </h2>
+                <img
+                  src={eachMachine.image}
+                  alt={eachMachine.name}
+                  className="machine-image"
+                />
 
-                    <p className="machine-price">
-                      ₹ {eachMachine.price}
-                    </p>
+                <span className="badge">
+                  Premium
+                </span>
 
-                    <p className="machine-description">
-                      {eachMachine.description}
-                    </p>
+              </div>
 
-                    <button
-                      className="buy-button"
-                      onClick={() =>
-                        onClickBuy(
-                          eachMachine
-                        )
-                      }
-                    >
-                      Add To Cart
-                    </button>
+              <div className="machine-details">
 
-                  </div>
-
+                <div className="rating">
+                  ⭐ 4.9
                 </div>
-              )
-            )
-          )}
 
-        </div>
+                <h2 className="machine-name">
+                  {eachMachine.name}
+                </h2>
+
+                <p className="machine-price">
+                  ₹ {eachMachine.price}
+                </p>
+
+                <p className="machine-description">
+                  {eachMachine.description}
+                </p>
+
+                <button
+                  className="buy-button"
+                  onClick={() =>
+                    onClickBuy(eachMachine)
+                  }
+                >
+                  Add To Cart 🛒
+                </button>
+
+              </div>
+
+            </div>
+          ))
+        )}
 
       </div>
-        <>
-      <Footer />
-       </>
-    </>
-  )
+
+    </div>
+
+    <Footer />
+  </>
+)
 }
 
 export default Machines

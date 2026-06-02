@@ -75,103 +75,127 @@ const Cart = () => {
       0
     )
 
-  return (
-    <>
-      <Header />
+return (
+  <>
+    <Header />
 
-      <div className="cart-container">
+    <div className="cart-container">
+
+      <section className="cart-hero">
 
         <h1 className="cart-heading">
-          My Cart
+          🛒 Shopping Cart
         </h1>
 
-        {cartList.length === 0 ? (
+        <p className="cart-subtitle">
+          Review your selected products before checkout.
+        </p>
 
-          <div className="empty-cart">
+      </section>
 
-            <h2>
-              Your Cart Is Empty
-            </h2>
+      {cartList.length === 0 ? (
+
+        <div className="empty-cart">
+
+          <div className="empty-card">
+
+            <h2>🛒 Your Cart Is Empty</h2>
+
+            <p>
+              Looks like you haven't added any products yet.
+            </p>
+
+            <button
+              className="shop-btn"
+              onClick={() => navigate("/")}
+            >
+              Continue Shopping
+            </button>
 
           </div>
 
-        ) : (
+        </div>
 
-          <>
-            <div className="cart-list">
+      ) : (
 
-              {cartList.map(eachItem => (
+        <div className="cart-content">
 
-                <div
-                  className="cart-card"
-                  key={eachItem.id}
-                >
+          <div className="cart-list">
 
-                  <img
-                    src={eachItem.image}
-                    alt={eachItem.name}
-                    className="cart-image"
-                  />
+            {cartList.map(eachItem => (
 
-                  <div className="cart-details">
+              <div
+                className="cart-card"
+                key={eachItem.id}
+              >
 
-                    <h2>
-                      {eachItem.name}
-                    </h2>
+                <img
+                  src={eachItem.image}
+                  alt={eachItem.name}
+                  className="cart-image"
+                />
 
-                    <p className="cart-price">
-                      ₹ {eachItem.price}
-                    </p>
+                <div className="cart-details">
 
-                    <p className="cart-description">
-                      {eachItem.description}
-                    </p>
+                  <h2>{eachItem.name}</h2>
 
-                  </div>
+                  <p className="cart-price">
+                    ₹ {eachItem.price}
+                  </p>
 
-                  <button
-                    className="remove-btn"
-                    onClick={() =>
-                      removeItem(
-                        eachItem.id
-                      )
-                    }
-                  >
-                    Remove
-                  </button>
+                  <p className="cart-description">
+                    {eachItem.description}
+                  </p>
 
                 </div>
 
-              ))}
+                <button
+                  className="remove-btn"
+                  onClick={() =>
+                    removeItem(eachItem.id)
+                  }
+                >
+                  Remove
+                </button>
 
+              </div>
+
+            ))}
+
+          </div>
+
+          <div className="summary-card">
+
+            <h2>Order Summary</h2>
+
+            <div className="summary-row">
+              <span>Items</span>
+              <span>{cartList.length}</span>
             </div>
 
-            <div className="total-section">
-
-              <h2>
-                Total : ₹ {totalPrice}
-              </h2>
-
-              <button
-                className="checkout-btn"
-                onClick={
-                  onClickPlaceOrder
-                }
-              >
-                Place Order
-              </button>
-
+            <div className="summary-row">
+              <span>Total</span>
+              <span>₹ {totalPrice}</span>
             </div>
 
-          </>
-        )}
+            <button
+              className="checkout-btn"
+              onClick={onClickPlaceOrder}
+            >
+              Place Order
+            </button>
 
-      </div>
-      <>
-      <Footer />
-       </>
-    </>
-  )
+          </div>
+
+        </div>
+
+      )}
+
+    </div>
+
+    <Footer />
+  </>
+)
 }
 
 export default Cart

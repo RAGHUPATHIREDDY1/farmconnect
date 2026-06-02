@@ -1,0 +1,162 @@
+/* Google Font Import */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #2e7d32;
+  --secondary: #66bb6a;
+  --accent: #ff9800;
+
+  --dark: #1b5e20;
+  --text: #444444;
+
+  --background: #f8fcf8;
+  --card-bg: #ffffff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+}
+
+a {
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+img {
+  width: 100%;
+  display: block;
+}
+
+ul {
+  list-style: none;
+}
+
+/* Common Section Styling */
+
+.section-heading {
+  text-align: center;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 50px;
+}
+
+/* Reusable Card */
+
+.card-shadow {
+  background: white;
+  border-radius: 24px;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.06);
+
+  transition: all 0.3s ease;
+}
+
+.card-shadow:hover {
+  transform: translateY(-8px);
+
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Reusable Button */
+
+.primary-btn {
+  background: var(--primary);
+  color: white;
+
+  border: none;
+
+  padding: 14px 28px;
+
+  border-radius: 50px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  transition: all 0.3s ease;
+}
+
+.primary-btn:hover {
+  transform: translateY(-3px);
+  background: #256b29;
+}
+
+.secondary-btn {
+  background: white;
+  color: var(--primary);
+
+  border: 2px solid var(--primary);
+
+  padding: 14px 28px;
+
+  border-radius: 50px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* Container */
+
+.page-container {
+  width: 90%;
+  max-width: 1400px;
+  margin: auto;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+/* Responsive */
+
+@media screen and (max-width: 992px) {
+  .section-heading {
+    font-size: 2.2rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .section-heading {
+    font-size: 1.8rem;
+  }
+
+  .page-container {
+    width: 95%;
+  }
+}
