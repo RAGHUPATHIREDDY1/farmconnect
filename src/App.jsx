@@ -15,6 +15,13 @@ import About from "./components/about";
 import Contact from "./components/contact";
 import Support from "./components/support";
 import PrivacyPolicy from "./components/privacyPolicy";
+import SellerLogin from "./components/seller/SellerLogin";
+import SellerRegister from "./components/seller/SellerRegister";
+import SellerDashboard from "./components/seller/SellerDashboard";
+import MyProducts from "./components/seller/MyProducts";
+import AddProduct from "./components/seller/AddProduct";
+import SellerOrders from "./components/seller/SellerOrders";
+
 
 import "./App.css";
 
@@ -87,6 +94,36 @@ const App = () => (
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/seller/login"
+        element={<SellerLogin />}
+      />
+
+      <Route
+        path="/seller/register"
+        element={<SellerRegister />}
+      />
+
+      <Route
+        path="/seller/dashboard"
+        element={<SellerDashboard />}
+      />
+
+      <Route
+        path="/seller/add-product"
+        element={<AddProduct />}
+      />
+
+      <Route
+        path="/seller/products"
+        element={<MyProducts />}
+      />
+
+      <Route
+        path="/seller/orders"
+        element={<SellerOrders />}
+      />
+
 
       <Route path="/about" element={<About />} />
 

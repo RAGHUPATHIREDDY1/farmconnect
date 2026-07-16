@@ -1,13 +1,39 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import {
+  User,
+  ChevronDown,
+  Package,
+  LogOut
+} from "lucide-react"
 import "./index.css";
 
 const Header = () => {
   const navigate = useNavigate();
-
+  const [
+  isProfileOpen,
+  setIsProfileOpen
+] = useState(false)
   const onClickLogout = () => {
     localStorage.removeItem("loggedUser");
     navigate("/login");
   };
+   const user =
+    JSON.parse(
+      localStorage.getItem("currentUser")
+    )
+
+
+  const userName =
+  user?.fullName ||
+  user?.name ||
+  "Buyer"
+
+const userInitial =
+  userName
+    .charAt(0)
+    .toUpperCase()
+
 
   return (
     <nav className="navbar">
@@ -73,14 +99,128 @@ const Header = () => {
         </li>
 
       </ul>
+      <button
+          className="account-switch-btn"
+          onClick={() => navigate("/seller/dashboard")}
+         >
+          <span>🌾</span>
+          <span>Seller</span>
+      </button>
+
+       {/* Profile */}
+
+<div className="profile-container">
+
+  <button
+    className="profile-button"
+    onClick={() =>
+      setIsProfileOpen(
+        !isProfileOpen
+      )
+    }
+  >
+    <div className="profile-image">
+        {userInitial}
+    </div>
+
+
+    <span>
+      {userName}
+    </span>
+
+
+    <ChevronDown size={15} />
+
+  </button>
+
+
+  {isProfileOpen && (
+
+    <div className="profile-dropdown">
+
+
+      {/* User Information */}
+
+      <div className="dropdown-user">
+
+        <div className="dropdown-image">
+            {userInitial}
+        </div>
+
+
+        <div>
+
+          <strong>
+            {userName}
+          </strong>
+
+          <span>
+            Buyer Account
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div className="dropdown-line" />
+
+
+      {/* Profile */}
 
       <button
-        type="button"
+        onClick={() =>
+          navigate(
+            "/profile"
+          )
+        }
+      >
+
+        <User size={17} />
+
+        Profile
+
+      </button>
+
+
+      {/* My Orders */}
+
+      <button
+        onClick={() =>
+          navigate(
+            "/orders"
+          )
+        }
+      >
+
+        <Package size={17} />
+
+        My Orders
+
+      </button>
+
+
+      <div className="dropdown-line" />
+
+
+      {/* Logout */}
+
+      <button
         className="logout-button"
         onClick={onClickLogout}
       >
+
+        <LogOut size={17} />
+
         Logout
+
       </button>
+
+    </div>
+
+  )}
+
+</div>
 
     </nav>
   );

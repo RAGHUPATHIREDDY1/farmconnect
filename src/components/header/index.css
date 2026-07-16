@@ -130,3 +130,262 @@
   }
 
 }
+.account-switch-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border: 1px solid #cbdac8;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #355a3b;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.account-switch-btn:hover {
+  border-color: #4b9654;
+  background: #f1f8ef;
+  color: #2d8138;
+  transform: translateY(-1px);
+}
+
+.account-switch-btn span:first-child {
+  font-size: 16px;
+}
+/* =========================
+   PROFILE CONTAINER
+========================= */
+
+.profile-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+
+/* =========================
+   PROFILE BUTTON
+========================= */
+
+.profile-button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  border: none;
+  background: transparent;
+
+  padding: 7px 10px;
+
+  cursor: pointer;
+
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+
+  border-radius: 10px;
+
+  transition: all 0.25s ease;
+}
+
+.profile-button:hover {
+  background: #f1f8f1;
+}
+
+
+/* =========================
+   PROFILE INITIAL
+========================= */
+
+.profile-image {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #eaf5e8;
+  color: #2e7d32;
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+
+/* =========================
+   PROFILE NAME
+========================= */
+
+.profile-name {
+  max-width: 120px;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* =========================
+   DROPDOWN
+========================= */
+
+.profile-dropdown {
+  position: absolute;
+
+  top: calc(100% + 12px);
+  right: 0;
+
+  width: 245px;
+
+  background: #ffffff;
+
+  border-radius: 14px;
+
+  padding: 10px;
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.14);
+
+  border: 1px solid #e5eee5;
+
+  z-index: 1000;
+
+  animation: profileDropdown 0.2s ease;
+}
+
+@keyframes profileDropdown {
+
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+}
+
+
+/* =========================
+   DROPDOWN USER
+========================= */
+
+.dropdown-user {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 10px;
+}
+
+
+.dropdown-image {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #eaf5e8;
+  color: #2e7d32;
+
+  font-weight: 700;
+  font-size: 18px;
+}
+
+
+.dropdown-user div:last-child {
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+
+.dropdown-user strong {
+  color: #252525;
+  font-size: 14px;
+}
+
+
+.dropdown-user span {
+  color: #7a7a7a;
+  font-size: 12px;
+}
+
+
+/* =========================
+   DIVIDER
+========================= */
+
+.dropdown-line {
+  height: 1px;
+
+  background: #edf1ed;
+
+  margin: 6px 0;
+}
+
+
+/* =========================
+   DROPDOWN BUTTONS
+========================= */
+
+.profile-dropdown > button {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 11px 12px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #333;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition: all 0.2s ease;
+}
+
+
+.profile-dropdown > button:hover {
+  background: #f2f8f2;
+  color: #2e7d32;
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+.profile-dropdown .logout-button {
+  color: #e53935;
+}
+
+
+.profile-dropdown .logout-button:hover {
+  background: #fff1f1;
+  color: #d32f2f;
+}
