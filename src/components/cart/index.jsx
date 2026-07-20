@@ -1,201 +1,460 @@
 import {useEffect, useState} from "react"
 import {useNavigate} from "react-router-dom"
-
+import {ShoppingCart, Trash2, Plus, Minus, ArrowRight, RefreshCw, AlertCircle} from "lucide-react"
 import Header from "../header"
 import Footer from "../Footer"
-
 import "./index.css"
 
+const API_URL = "https://farmconnectbackend.onrender.com/api/orders"
+
 const Cart = () => {
-
-  const [cartList, setCartList] =
-    useState([])
-
   const navigate = useNavigate()
+  const [cart, setCart] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [updatingItemId, setUpdatingItemId] = useState(null)
 
-  useEffect(() => {
+  const getAccessToken = () => {
+    return localStorage.getItem("accessToken")
+  }
 
-    const data =
-      JSON.parse(
-        localStorage.getItem("cart")
-      ) || []
+  const fetchCart = async () => {
+    const accessToken = getAccessToken()
 
-    setCartList(data)
+    if (!accessToken) {
+      navigate("/login")
+      return
+    }
 
-  }, [])
+    setIsLoading(true)
+    setErrorMessage("")
 
-  const removeItem = id => {
-
-    const updatedList =
-      cartList.filter(
-        eachItem =>
-          eachItem.id !== id
+    try {
+      const response = await fetch(
+        `${API_URL}/cart/`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          }
+        }
       )
 
-    setCartList(updatedList)
+      const data = await response.json()
 
-    localStorage.setItem(
-      "cart",
-      JSON.stringify(updatedList)
-    )
+      if (response.status === 401) {
+        localStorage.removeItem("accessToken")
+        localStorage.removeItem("refreshToken")
+        localStorage.removeItem("user")
+        navigate("/login")
+        return
+      }
+
+      if (!response.ok) {
+        setErrorMessage(
+          data.error ||
+          data.detail ||
+          "Unable to load your cart."
+        )
+        return
+      }
+
+      setCart(data)
+    } catch (error) {
+      console.error("Cart Error:", error)
+      setErrorMessage(
+        "Unable to connect to the server. Please try again."
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const onClickPlaceOrder = () => {
+  useEffect(() => {
+    fetchCart()
+  }, [])
 
-    const previousOrders =
-      JSON.parse(
-        localStorage.getItem("orders")
-      ) || []
+  const updateQuantity = async (itemId, quantity) => {
+    if (quantity < 1) {
+      return
+    }
 
-    const newOrders = [
-      ...previousOrders,
-      ...cartList
-    ]
+    const accessToken = getAccessToken()
 
-    localStorage.setItem(
-      "orders",
-      JSON.stringify(newOrders)
-    )
+    if (!accessToken) {
+      navigate("/login")
+      return
+    }
 
-    localStorage.removeItem("cart")
+    setUpdatingItemId(itemId)
 
-    setCartList([])
+    try {
+      const response = await fetch(
+        `${API_URL}/cart/items/${itemId}/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            quantity
+          })
+        }
+      )
 
-    alert(
-      "Order Placed Successfully"
-    )
+      const data = await response.json()
 
-    navigate("/orders")
+      if (!response.ok) {
+        alert(
+          data.error ||
+          "Unable to update quantity."
+        )
+        return
+      }
+
+      await fetchCart()
+    } catch (error) {
+      console.error("Update Quantity Error:", error)
+      alert("Unable to connect to the server.")
+    } finally {
+      setUpdatingItemId(null)
+    }
   }
 
-  const totalPrice =
-    cartList.reduce(
-      (acc, item) =>
-        acc + Number(item.price),
-      0
+  const removeItem = async itemId => {
+    const shouldRemove = window.confirm(
+      "Are you sure you want to remove this product?"
     )
 
-return (
-  <>
-    <Header />
+    if (!shouldRemove) {
+      return
+    }
 
-    <div className="cart-container">
+    const accessToken = getAccessToken()
 
-      <section className="cart-hero">
+    if (!accessToken) {
+      navigate("/login")
+      return
+    }
 
-        <h1 className="cart-heading">
-          🛒 Shopping Cart
-        </h1>
+    try {
+      const response = await fetch(
+        `${API_URL}/cart/items/${itemId}/remove/`,
+        {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`
+          }
+        }
+      )
 
-        <p className="cart-subtitle">
-          Review your selected products before checkout.
-        </p>
+      const data = await response.json()
 
-      </section>
+      if (!response.ok) {
+        alert(
+          data.error ||
+          "Unable to remove product."
+        )
+        return
+      }
 
-      {cartList.length === 0 ? (
+      await fetchCart()
+    } catch (error) {
+      console.error("Remove Cart Item Error:", error)
+      alert("Unable to connect to the server.")
+    }
+  }
 
-        <div className="empty-cart">
+  const totalItems = cart?.items?.reduce(
+    (total, item) =>
+      total + item.quantity,
+    0
+  ) || 0
 
-          <div className="empty-card">
+  return (
+    <>
+      <Header />
 
-            <h2>🛒 Your Cart Is Empty</h2>
+      <main className="cart-page">
+        <section className="cart-hero">
+          <div className="cart-hero-icon">
+            <ShoppingCart size={34} />
+          </div>
+
+          <div>
+            <h1>
+              Shopping Cart
+            </h1>
 
             <p>
-              Looks like you haven't added any products yet.
+              Review your selected farm products before checkout.
+            </p>
+          </div>
+        </section>
+
+        {isLoading && (
+          <div className="cart-state">
+            <RefreshCw
+              size={34}
+              className="cart-loading-icon"
+            />
+
+            <h2>
+              Loading Your Cart
+            </h2>
+
+            <p>
+              Please wait while we load your products.
+            </p>
+          </div>
+        )}
+
+        {!isLoading && errorMessage && (
+          <div className="cart-state cart-error">
+            <AlertCircle size={40} />
+
+            <h2>
+              Unable to Load Cart
+            </h2>
+
+            <p>
+              {errorMessage}
             </p>
 
             <button
-              className="shop-btn"
-              onClick={() => navigate("/")}
+              className="cart-retry-button"
+              onClick={fetchCart}
             >
-              Continue Shopping
+              <RefreshCw size={17} />
+              Try Again
             </button>
-
           </div>
+        )}
 
-        </div>
+        {!isLoading &&
+          !errorMessage &&
+          cart &&
+          cart.items.length === 0 && (
+            <div className="cart-state">
+              <ShoppingCart size={58} />
 
-      ) : (
+              <h2>
+                Your Cart Is Empty
+              </h2>
 
-        <div className="cart-content">
+              <p>
+                You have not added any products yet.
+              </p>
 
-          <div className="cart-list">
-
-            {cartList.map(eachItem => (
-
-              <div
-                className="cart-card"
-                key={eachItem.id}
+              <button
+                className="cart-shop-button"
+                onClick={() => navigate("/")}
               >
+                Continue Shopping
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          )}
 
-                <img
-                  src={eachItem.image}
-                  alt={eachItem.name}
-                  className="cart-image"
-                />
+        {!isLoading &&
+          !errorMessage &&
+          cart &&
+          cart.items.length > 0 && (
+            <div className="cart-layout">
+              <section className="cart-items-section">
+                <div className="cart-section-header">
+                  <div>
+                    <h2>
+                      Your Products
+                    </h2>
 
-                <div className="cart-details">
+                    <p>
+                      {totalItems} item
+                      {totalItems !== 1 ? "s" : ""} in your cart
+                    </p>
+                  </div>
+                </div>
 
-                  <h2>{eachItem.name}</h2>
+                <div className="cart-items-list">
+                  {cart.items.map(item => (
+                    <article
+                      className="cart-product-card"
+                      key={item.id}
+                    >
+                      <div className="cart-product-image-wrapper">
+                        <img
+                          src={item.product.image_url}
+                          alt={item.product.name}
+                          className="cart-product-image"
+                          onError={event => {
+                            event.currentTarget.src =
+                              "https://via.placeholder.com/500x350?text=No+Image"
+                          }}
+                        />
+                      </div>
 
-                  <p className="cart-price">
-                    ₹ {eachItem.price}
-                  </p>
+                      <div className="cart-product-content">
+                        <div className="cart-product-top">
+                          <div>
+                            <span className="cart-product-category">
+                              {item.product.category}
+                            </span>
 
-                  <p className="cart-description">
-                    {eachItem.description}
-                  </p>
+                            <h3>
+                              {item.product.name}
+                            </h3>
 
+                            <p className="cart-product-location">
+                              📍 {item.product.location}
+                            </p>
+                          </div>
+
+                          <button
+                            className="cart-remove-button"
+                            onClick={() =>
+                              removeItem(item.id)
+                            }
+                            title="Remove product"
+                          >
+                            <Trash2 size={19} />
+                          </button>
+                        </div>
+
+                        <div className="cart-product-bottom">
+                          <div className="cart-price">
+                            ₹{Number(
+                              item.product.price
+                            ).toLocaleString("en-IN")}
+                          </div>
+
+                          <div className="cart-quantity-control">
+                            <button
+                              onClick={() =>
+                                updateQuantity(
+                                  item.id,
+                                  item.quantity - 1
+                                )
+                              }
+                              disabled={
+                                item.quantity <= 1 ||
+                                updatingItemId === item.id
+                              }
+                            >
+                              <Minus size={16} />
+                            </button>
+
+                            <span>
+                              {updatingItemId === item.id
+                                ? "..."
+                                : item.quantity}
+                            </span>
+
+                            <button
+                              onClick={() =>
+                                updateQuantity(
+                                  item.id,
+                                  item.quantity + 1
+                                )
+                              }
+                              disabled={
+                                updatingItemId === item.id
+                              }
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+
+                          <div className="cart-subtotal">
+                            <span>
+                              Subtotal
+                            </span>
+
+                            <strong>
+                              ₹{Number(
+                                item.subtotal
+                              ).toLocaleString("en-IN")}
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+
+              <aside className="cart-summary-card">
+                <div className="cart-summary-header">
+                  <h2>
+                    Order Summary
+                  </h2>
+
+                  <span>
+                    {totalItems} items
+                  </span>
+                </div>
+
+                <div className="cart-summary-row">
+                  <span>
+                    Subtotal
+                  </span>
+
+                  <strong>
+                    ₹{Number(
+                      cart.total_amount
+                    ).toLocaleString("en-IN")}
+                  </strong>
+                </div>
+
+                <div className="cart-summary-row">
+                  <span>
+                    Delivery
+                  </span>
+
+                  <strong className="free-delivery">
+                    FREE
+                  </strong>
+                </div>
+
+                <div className="cart-summary-divider"></div>
+
+                <div className="cart-total-row">
+                  <span>
+                    Total
+                  </span>
+
+                  <strong>
+                    ₹{Number(
+                      cart.total_amount
+                    ).toLocaleString("en-IN")}
+                  </strong>
                 </div>
 
                 <button
-                  className="remove-btn"
+                  className="cart-checkout-button"
                   onClick={() =>
-                    removeItem(eachItem.id)
+                    navigate("/checkout")
                   }
                 >
-                  Remove
+                  Proceed to Checkout
+                  <ArrowRight size={19} />
                 </button>
 
-              </div>
-
-            ))}
-
-          </div>
-
-          <div className="summary-card">
-
-            <h2>Order Summary</h2>
-
-            <div className="summary-row">
-              <span>Items</span>
-              <span>{cartList.length}</span>
+                <button
+                  className="cart-continue-button"
+                  onClick={() => navigate("/")}
+                >
+                  Continue Shopping
+                </button>
+              </aside>
             </div>
+          )}
+      </main>
 
-            <div className="summary-row">
-              <span>Total</span>
-              <span>₹ {totalPrice}</span>
-            </div>
-
-            <button
-              className="checkout-btn"
-              onClick={onClickPlaceOrder}
-            >
-              Place Order
-            </button>
-
-          </div>
-
-        </div>
-
-      )}
-
-    </div>
-
-    <Footer />
-  </>
-)
+      <Footer />
+    </>
+  )
 }
 
 export default Cart

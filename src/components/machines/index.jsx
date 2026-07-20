@@ -4,197 +4,220 @@ import Footer from "../Footer"
 import "./index.css"
 
 const Machines = () => {
-
-  const [machinesList, setMachinesList] =
-    useState([])
-
-  const [searchInput, setSearchInput] =
-    useState("")
+  const [machinesList, setMachinesList] = useState([])
+  const [searchInput, setSearchInput] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
 
   useEffect(() => {
-
     const getMachinesData = async () => {
-
       try {
-
         const response = await fetch(
-          "https://www.jsonkeeper.com/b/ODZLH"
+          "https://farmconnectbackend.onrender.com/api/products/?category=MACHINE"
         )
+
+        if (!response.ok) {
+          throw new Error("Unable to load machines")
+        }
 
         const data = await response.json()
 
-        if (Array.isArray(data)) {
-
-          setMachinesList(data)
-
-        } else if (data.machines) {
-
-          setMachinesList(data.machines)
-
-        } else if (data.data) {
-
-          setMachinesList(data.data)
-
-        }
-
-      } catch(error) {
-
-        console.log(error)
+        setMachinesList(
+          Array.isArray(data)
+            ? data
+            : data.results || []
+        )
+      } catch (error) {
+        console.error("Machines Error:", error)
+        setErrorMessage(
+          "Unable to connect to the server. Please try again."
+        )
+      } finally {
+        setIsLoading(false)
       }
     }
 
     getMachinesData()
-
   }, [])
 
-  const onClickBuy = eachMachine => {
+ const onClickBuy = async eachProduct => {
+  const accessToken = localStorage.getItem("accessToken")
 
-    const cartItems =
-      JSON.parse(
-        localStorage.getItem("cart")
-      ) || []
+  if (!accessToken) {
+    alert("Please login as a buyer first.")
+    navigate("/login")
+    return
+  }
 
-    const isAlreadyExists =
-      cartItems.find(
-        item =>
-          item.id === eachMachine.id
-      )
+  try {
+    const response = await fetch(
+      "https://farmconnectbackend.onrender.com/api/orders/cart/add/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          product_id: eachProduct.id,
+          quantity: 1
+        })
+      }
+    )
 
-    if (isAlreadyExists) {
+    const data = await response.json()
 
-      alert(
-        "Item Already In Cart"
-      )
-
+    if (!response.ok) {
+      alert(data.error || "Unable to add product to cart.")
       return
     }
 
-    cartItems.push(eachMachine)
-
-    localStorage.setItem(
-      "cart",
-      JSON.stringify(cartItems)
-    )
-
-    alert(
-      `${eachMachine.name}
-      Added To Cart`
-    )
+    alert(`${eachProduct.name} added to cart successfully.`)
+  } catch (error) {
+    console.error("Add To Cart Error:", error)
+    alert("Unable to connect to the server.")
   }
-
-  const filteredMachines =
-    machinesList.filter(
-      eachMachine =>
-        eachMachine.name
-          .toLowerCase()
-          .includes(
-            searchInput.toLowerCase()
-          )
+}
+  const filteredList =
+    machinesList.filter(eachMachine =>
+      eachMachine.name
+        ?.toLowerCase()
+        .includes(
+          searchInput.toLowerCase()
+        )
     )
 
   return (
-  <>
-    <Header />
+    <>
+      <Header />
 
-    <div className="machines-container">
+      <div className="machines-container">
+        <section className="machines-hero">
+          <h1 className="main-heading">
+            🚜 Farm Machines & Equipment
+          </h1>
 
-      <section className="machines-hero">
+          <p className="hero-subtitle">
+            Quality farming equipment and machines from trusted sellers.
+          </p>
+        </section>
 
-        <h1 className="main-heading">
-          🚜 Modern Farming Machines
-        </h1>
+        <div className="search-container">
+          <input
+            type="search"
+            placeholder="Search Farm Machines..."
+            className="search-input"
+            value={searchInput}
+            onChange={event =>
+              setSearchInput(
+                event.target.value
+              )
+            }
+          />
+        </div>
 
-        <p className="hero-subtitle">
-          Advanced agricultural equipment to improve productivity and efficiency.
-        </p>
-
-      </section>
-
-      <div className="search-container">
-
-        <input
-          type="search"
-          placeholder="Search Farming Machines..."
-          className="search-input"
-          value={searchInput}
-          onChange={event =>
-            setSearchInput(event.target.value)
-          }
-        />
-
-      </div>
-
-      <div className="machines-list-container">
-
-        {filteredMachines.length === 0 ? (
-
+        {isLoading && (
           <div className="empty-container">
-            <h2>No Machines Found 🚜</h2>
+            <h2>
+              Loading Farm Machines... 🚜
+            </h2>
           </div>
-
-        ) : (
-
-          filteredMachines.map(eachMachine => (
-
-            <div
-              className="machine-card"
-              key={eachMachine.id}
-            >
-
-              <div className="image-container">
-
-                <img
-                  src={eachMachine.image}
-                  alt={eachMachine.name}
-                  className="machine-image"
-                />
-
-                <span className="badge">
-                  Premium
-                </span>
-
-              </div>
-
-              <div className="machine-details">
-
-                <div className="rating">
-                  ⭐ 4.9
-                </div>
-
-                <h2 className="machine-name">
-                  {eachMachine.name}
-                </h2>
-
-                <p className="machine-price">
-                  ₹ {eachMachine.price}
-                </p>
-
-                <p className="machine-description">
-                  {eachMachine.description}
-                </p>
-
-                <button
-                  className="buy-button"
-                  onClick={() =>
-                    onClickBuy(eachMachine)
-                  }
-                >
-                  Add To Cart 🛒
-                </button>
-
-              </div>
-
-            </div>
-          ))
         )}
 
+        {!isLoading && errorMessage && (
+          <div className="empty-container">
+            <h2>
+              {errorMessage}
+            </h2>
+          </div>
+        )}
+
+        {!isLoading &&
+          !errorMessage &&
+          filteredList.length === 0 && (
+            <div className="empty-container">
+              <h2>
+                No Machines Available 🚜
+              </h2>
+
+              <p>
+                Sellers have not added any machines yet.
+              </p>
+            </div>
+          )}
+
+        {!isLoading &&
+          !errorMessage &&
+          filteredList.length > 0 && (
+            <div className="machines-list-container">
+              {filteredList.map(eachMachine => (
+                <div
+                  className="machine-card"
+                  key={eachMachine.id}
+                >
+                  <div className="image-container">
+                    <img
+                      src={eachMachine.image_url}
+                      alt={eachMachine.name}
+                      className="machine-image"
+                      onError={event => {
+                        event.currentTarget.src =
+                          "https://via.placeholder.com/500x350?text=No+Image"
+                      }}
+                    />
+
+                    <span className="badge">
+                      Verified
+                    </span>
+                  </div>
+
+                  <div className="machine-details">
+                    <div className="rating">
+                      ⭐ 4.8
+                    </div>
+
+                    <h2 className="machine-name">
+                      {eachMachine.name}
+                    </h2>
+
+                    <p className="machine-price">
+                      ₹ {eachMachine.price}
+                    </p>
+
+                    <p className="machine-description">
+                      {eachMachine.description}
+                    </p>
+
+                    <p className="machine-location">
+                      📍 {eachMachine.location}
+                    </p>
+
+                    <p className="machine-quantity">
+                      📦 Available:
+                      {" "}
+                      {eachMachine.available_quantity}
+                    </p>
+
+                    <button
+                      className="buy-button"
+                      onClick={() =>
+                        onClickBuy(
+                          eachMachine
+                        )
+                      }
+                    >
+                      Add To Cart 🛒
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
       </div>
 
-    </div>
-
-    <Footer />
-  </>
-)
+      <Footer />
+    </>
+  )
 }
 
 export default Machines

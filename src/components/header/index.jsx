@@ -1,229 +1,321 @@
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import {useState} from "react"
+import {Link, useNavigate} from "react-router-dom"
 import {
+  Menu,
+  X,
   User,
   ChevronDown,
   Package,
-  LogOut
+  LogOut,
+  ShoppingCart,
+  Store
 } from "lucide-react"
-import "./index.css";
+
+import "./index.css"
 
 const Header = () => {
-  const navigate = useNavigate();
-  const [
-  isProfileOpen,
-  setIsProfileOpen
-] = useState(false)
-  const onClickLogout = () => {
-    localStorage.removeItem("loggedUser");
-    navigate("/login");
-  };
-   const user =
-    JSON.parse(
-      localStorage.getItem("currentUser")
-    )
+  const navigate = useNavigate()
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+
+  const user = JSON.parse(
+    localStorage.getItem("currentUser")
+  )
 
   const userName =
-  user?.fullName ||
-  user?.name ||
-  "Buyer"
+    user?.full_name ||
+    user?.fullName ||
+    user?.name ||
+    "Buyer"
 
-const userInitial =
-  userName
+  const userInitial = userName
     .charAt(0)
     .toUpperCase()
 
+  const onClickLogout = () => {
+    localStorage.removeItem("accessToken")
+    localStorage.removeItem("refreshToken")
+    localStorage.removeItem("currentUser")
+
+    navigate("/login")
+  }
+
+  const closeMenu = () => {
+    setIsMenuOpen(false)
+  }
 
   return (
-    <nav className="navbar">
+    <header className="navbar">
 
-      <Link to="/" className="logo-link">
+      {/* Logo */}
+
+      <Link
+        to="/"
+        className="logo-link"
+        onClick={closeMenu}
+      >
         <div className="logo-container">
-          <span className="logo-icon">🌾</span>
 
-          <div>
-            <h1 className="logo-heading">
+          <div className="logo-icon">
+            🌾
+          </div>
+
+          <div className="logo-text">
+
+            <h1>
               FarmConnect
             </h1>
 
-            <p className="logo-tagline">
+            <p>
               Farm To Home
             </p>
+
           </div>
+
         </div>
       </Link>
 
-      <ul className="nav-items-container">
 
-        <li>
-          <Link to="/" className="nav-link">
-            Home
-          </Link>
-        </li>
+      {/* Desktop Navigation */}
 
-        <li>
-          <Link to="/fruits" className="nav-link">
-            Fruits
-          </Link>
-        </li>
+      <nav className="desktop-navigation">
 
-        <li>
-          <Link to="/vegetables" className="nav-link">
-            Vegetables
-          </Link>
-        </li>
+        <Link to="/">
+          Home
+        </Link>
 
-        <li>
-          <Link to="/animals" className="nav-link">
-            Animals
-          </Link>
-        </li>
+        <Link to="/fruits">
+          Fruits
+        </Link>
 
-        <li>
-          <Link to="/machines" className="nav-link">
-            Machines
-          </Link>
-        </li>
+        <Link to="/vegetables">
+          Vegetables
+        </Link>
 
-        <li>
-          <Link to="/cart" className="nav-link">
-            🛒 Cart
-          </Link>
-        </li>
+        <Link to="/animals">
+          Animals
+        </Link>
 
-        <li>
-          <Link to="/orders" className="nav-link">
-            Orders
-          </Link>
-        </li>
+        <Link to="/machines">
+          Machines
+        </Link>
 
-      </ul>
-      <button
-          className="account-switch-btn"
-          onClick={() => navigate("/seller/dashboard")}
-         >
-          <span>🌾</span>
-          <span>Seller</span>
-      </button>
+        <Link to="/cart">
+          <ShoppingCart size={17} />
+          Cart
+        </Link>
 
-       {/* Profile */}
+        <Link to="/orders">
+          <Package size={17} />
+          Orders
+        </Link>
 
-<div className="profile-container">
-
-  <button
-    className="profile-button"
-    onClick={() =>
-      setIsProfileOpen(
-        !isProfileOpen
-      )
-    }
-  >
-    <div className="profile-image">
-        {userInitial}
-    </div>
+      </nav>
 
 
-    <span>
-      {userName}
-    </span>
+      {/* Right Section */}
 
+      <div className="navbar-right">
 
-    <ChevronDown size={15} />
+        {/* Seller Button */}
 
-  </button>
-
-
-  {isProfileOpen && (
-
-    <div className="profile-dropdown">
-
-
-      {/* User Information */}
-
-      <div className="dropdown-user">
-
-        <div className="dropdown-image">
-            {userInitial}
-        </div>
-
-
-        <div>
-
-          <strong>
-            {userName}
-          </strong>
-
+        <button
+          className="seller-button"
+          onClick={() =>
+            navigate("/seller/dashboard")
+          }
+        >
+          <Store size={17} />
           <span>
-            Buyer Account
+            Seller
           </span>
+        </button>
+
+
+        {/* Profile */}
+
+        <div className="profile-container">
+
+          <button
+            className="profile-button"
+            onClick={() =>
+              setIsProfileOpen(
+                !isProfileOpen
+              )
+            }
+          >
+
+            <div className="profile-image">
+              {userInitial}
+            </div>
+
+            <span className="profile-name">
+              {userName}
+            </span>
+
+            <ChevronDown
+              size={16}
+            />
+
+          </button>
+
+
+          {isProfileOpen && (
+
+            <div className="profile-dropdown">
+
+              <div className="dropdown-user">
+
+                <div className="dropdown-image">
+                  {userInitial}
+                </div>
+
+                <div>
+
+                  <strong>
+                    {userName}
+                  </strong>
+
+                  <span>
+                    Buyer Account
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <div className="dropdown-line" />
+
+
+              <button
+                onClick={() =>
+                  navigate("/profile")
+                }
+              >
+                <User size={17} />
+                Profile
+              </button>
+
+
+              <button
+                onClick={() =>
+                  navigate("/orders")
+                }
+              >
+                <Package size={17} />
+                My Orders
+              </button>
+
+
+              <div className="dropdown-line" />
+
+
+              <button
+                className="logout-button"
+                onClick={onClickLogout}
+              >
+                <LogOut size={17} />
+                Logout
+              </button>
+
+            </div>
+
+          )}
 
         </div>
+
+
+        {/* Mobile Menu Button */}
+
+        <button
+          className="menu-button"
+          onClick={() =>
+            setIsMenuOpen(
+              !isMenuOpen
+            )
+          }
+        >
+
+          {isMenuOpen ? (
+            <X size={25} />
+          ) : (
+            <Menu size={25} />
+          )}
+
+        </button>
 
       </div>
 
 
-      <div className="dropdown-line" />
+      {/* Mobile Navigation */}
 
+      {isMenuOpen && (
 
-      {/* Profile */}
+        <nav className="mobile-navigation">
 
-      <button
-        onClick={() =>
-          navigate(
-            "/profile"
-          )
-        }
-      >
+          <Link
+            to="/"
+            onClick={closeMenu}
+          >
+            Home
+          </Link>
 
-        <User size={17} />
+          <Link
+            to="/fruits"
+            onClick={closeMenu}
+          >
+            Fruits
+          </Link>
 
-        Profile
+          <Link
+            to="/vegetables"
+            onClick={closeMenu}
+          >
+            Vegetables
+          </Link>
 
-      </button>
+          <Link
+            to="/animals"
+            onClick={closeMenu}
+          >
+            Animals
+          </Link>
 
+          <Link
+            to="/machines"
+            onClick={closeMenu}
+          >
+            Machines
+          </Link>
 
-      {/* My Orders */}
+          <Link
+            to="/cart"
+            onClick={closeMenu}
+          >
+            🛒 Cart
+          </Link>
 
-      <button
-        onClick={() =>
-          navigate(
-            "/orders"
-          )
-        }
-      >
+          <Link
+            to="/orders"
+            onClick={closeMenu}
+          >
+            📦 Orders
+          </Link>
+          <Link
+    to="/ai-assistant"
+    className="flex items-center gap-2"
+>
+    <Sparkles size={18} />
+    FarmConnect AI
+</Link>
+        </nav>
 
-        <Package size={17} />
+      )}
 
-        My Orders
+    </header>
+  )
+}
 
-      </button>
-
-
-      <div className="dropdown-line" />
-
-
-      {/* Logout */}
-
-      <button
-        className="logout-button"
-        onClick={onClickLogout}
-      >
-
-        <LogOut size={17} />
-
-        Logout
-
-      </button>
-
-    </div>
-
-  )}
-
-</div>
-
-    </nav>
-  );
-};
-
-export default Header;
+export default Header

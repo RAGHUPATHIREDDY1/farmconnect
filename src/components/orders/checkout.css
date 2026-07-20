@@ -1,0 +1,167 @@
+.checkout-page {
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.checkout-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.checkout-back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  margin-bottom: 30px;
+}
+
+.checkout-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.checkout-header h1 {
+  margin: 0;
+}
+
+.checkout-header p {
+  margin: 5px 0 0;
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 30px;
+}
+
+.checkout-form,
+.checkout-summary {
+  padding: 25px;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.checkout-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.checkout-item p {
+  margin: 5px 0 0;
+}
+
+.checkout-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 20px;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px solid #eee;
+}
+
+.place-order-button {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.place-order-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.checkout-error {
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.checkout-empty {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.checkout-empty button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

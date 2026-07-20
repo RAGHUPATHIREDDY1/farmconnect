@@ -1,42 +1,86 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-
-import "./index.css";
+import {useState} from "react"
+import {useNavigate, Link} from "react-router-dom"
+import "./index.css"
 
 const Login = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [errorMsg, setErrorMsg] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
-  const onSubmitLogin = event => {
-    event.preventDefault();
+  const onSubmitLogin = async event => {
+    event.preventDefault()
 
-    setErrorMsg("");
+    setErrorMsg("")
 
-    const users =
-      JSON.parse(localStorage.getItem("users")) || [];
-
-    const validUser = users.find(
-      eachUser =>
-        eachUser.email === email &&
-        eachUser.password === password
-    );
-
-    if (validUser) {
-      localStorage.setItem(
-        "loggedUser",
-        JSON.stringify(validUser)
-      );
-
-      navigate("/");
-    } else {
-      setErrorMsg(
-        "Invalid Email or Password"
-      );
+    if (!email || !password) {
+      setErrorMsg("Please enter email and password.")
+      return
     }
-  };
+
+    setIsLoading(true)
+
+    try {
+      const response = await fetch(
+        "https://farmconnectbackend.onrender.com/api/accounts/buyer/login/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: email.toLowerCase().trim(),
+            password
+          })
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const backendError =
+          Object.values(data)
+            .flat()
+            .join(" ")
+
+        setErrorMsg(
+          backendError ||
+          "Invalid email or password."
+        )
+
+        return
+      }
+
+      localStorage.setItem(
+        "accessToken",
+        data.access
+      )
+
+      localStorage.setItem(
+        "refreshToken",
+        data.refresh
+      )
+
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify(data.user)
+      )
+
+      navigate("/", {replace: true})
+
+    } catch (error) {
+      console.error("Login Error:", error)
+
+      setErrorMsg(
+        "Unable to connect to the server. Make sure Django is running."
+      )
+
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="login-page">
@@ -45,7 +89,9 @@ const Login = () => {
 
         <div className="login-left">
 
-          <h1>🌾 FarmConnect</h1>
+          <h1>
+            🌾 FarmConnect
+          </h1>
 
           <p>
             Connecting Farmers & Buyers
@@ -54,7 +100,7 @@ const Login = () => {
 
           <img
             src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1000"
-            alt="farm"
+            alt="Farm"
             className="login-image"
           />
 
@@ -62,10 +108,12 @@ const Login = () => {
 
         <div className="login-right">
 
-          <h2>Welcome Back 👋</h2>
+          <h2>
+            Welcome Back 👋
+          </h2>
 
           <p className="subtitle">
-            Login to continue your journey
+            Login to your buyer account
           </p>
 
           <form
@@ -73,22 +121,30 @@ const Login = () => {
             className="login-form"
           >
 
+            <label className="label">
+              Email
+            </label>
+
             <input
               type="email"
               placeholder="Enter Email"
               value={email}
-              onChange={e =>
-                setEmail(e.target.value)
+              onChange={event =>
+                setEmail(event.target.value)
               }
               className="input-field"
             />
+
+            <label className="label">
+              Password
+            </label>
 
             <input
               type="password"
               placeholder="Enter Password"
               value={password}
-              onChange={e =>
-                setPassword(e.target.value)
+              onChange={event =>
+                setPassword(event.target.value)
               }
               className="input-field"
             />
@@ -102,8 +158,11 @@ const Login = () => {
             <button
               type="submit"
               className="login-btn"
+              disabled={isLoading}
             >
-              Login
+              {isLoading
+                ? "Logging in..."
+                : "Login"}
             </button>
 
             <p className="register-text">
@@ -115,7 +174,6 @@ const Login = () => {
               >
                 Register
               </Link>
-
             </p>
 
           </form>
@@ -125,7 +183,7 @@ const Login = () => {
       </div>
 
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

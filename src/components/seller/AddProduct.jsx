@@ -7,218 +7,169 @@ import {
   IndianRupee,
   Boxes,
   FileText,
-  Phone,
-  User,
   ArrowLeft,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react"
-
 import SellerHeader from "./SellerHeader"
 import Footer from "../Footer"
 import "./seller.css"
 
 const AddProduct = () => {
-
   const navigate = useNavigate()
 
   const [productData, setProductData] = useState({
-
     name: "",
     category: "",
     price: "",
-    quantity: "",
-    description: "",
-    image: "",
+    available_quantity: "",
     location: "",
-    sellerName: "",
-    phone: ""
-
+    description: "",
+    image_url: ""
   })
 
   const [successMessage, setSuccessMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const onChangeInput = event => {
-
     const { name, value } = event.target
-
     setProductData(previousData => ({
       ...previousData,
       [name]: value
     }))
-
+    setErrorMessage("")
   }
 
-  const onSubmitProduct = event => {
-
+  const onSubmitProduct = async event => {
     event.preventDefault()
+    setSuccessMessage("")
+    setErrorMessage("")
+    setIsLoading(true)
 
-    const newProduct = {
+    const accessToken = localStorage.getItem("accessToken")
 
-      id: Date.now(),
-
-      name: productData.name,
-
-      category: productData.category,
-
-      price: Number(productData.price),
-
-      quantity: Number(productData.quantity),
-
-      description: productData.description,
-
-      image: productData.image,
-
-      location: productData.location,
-
-      sellerName: productData.sellerName,
-
-      phone: productData.phone,
-
-      createdAt: new Date().toISOString(),
-
-      rating: 4.8
-
+    if (!accessToken) {
+      setErrorMessage("Your session has expired. Please login again.")
+      setIsLoading(false)
+      return
     }
 
-    const existingProducts =
-      JSON.parse(
-        localStorage.getItem("sellerProducts")
-      ) || []
+    try {
+      const response = await fetch(
+        "https://farmconnectbackend.onrender.com/api/products/add/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            name: productData.name,
+            category: productData.category,
+            price: productData.price,
+            available_quantity: productData.available_quantity,
+            location: productData.location,
+            description: productData.description,
+            image_url: productData.image_url
+          })
+        }
+      )
 
-    const updatedProducts = [
-      ...existingProducts,
-      newProduct
-    ]
+      const data = await response.json()
 
-    localStorage.setItem(
-      "sellerProducts",
-      JSON.stringify(updatedProducts)
-    )
+      if (!response.ok) {
+        console.error("Product Add Error:", data)
+        if (data.detail) {
+          setErrorMessage(data.detail)
+        } else if (typeof data === "object") {
+          const firstError = Object.values(data)[0]
+          if (Array.isArray(firstError)) {
+            setErrorMessage(firstError[0])
+          } else {
+            setErrorMessage("Please check the product details.")
+          }
+        } else {
+          setErrorMessage("Unable to add product.")
+        }
+        return
+      }
 
-    setSuccessMessage(
-      "Product successfully added to your store!"
-    )
+      setSuccessMessage("Product added successfully!")
+      setProductData({
+        name: "",
+        category: "",
+        price: "",
+        available_quantity: "",
+        location: "",
+        description: "",
+        image_url: ""
+      })
 
-    setProductData({
-
-      name: "",
-      category: "",
-      price: "",
-      quantity: "",
-      description: "",
-      image: "",
-      location: "",
-      sellerName: "",
-      phone: ""
-
-    })
-
-    setTimeout(() => {
-
-      navigate("/seller/products")
-
-    }, 1500)
-
+      setTimeout(() => {
+        navigate("/seller/products")
+      }, 1200)
+    } catch (error) {
+      console.error("Add Product Error:", error)
+      setErrorMessage("Unable to connect to the server. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-
     <div className="seller-add-product-page">
-
-        <SellerHeader />
+      <SellerHeader />
 
       <div className="seller-add-product-header">
-
         <button
           className="seller-back-button"
-          onClick={() =>
-            navigate("/seller/dashboard")
-          }
+          onClick={() => navigate("/seller/dashboard")}
         >
           <ArrowLeft size={18} />
           Back to Dashboard
         </button>
 
         <div className="seller-add-product-title">
-
           <div className="seller-title-icon">
             <PackagePlus size={28} />
           </div>
-
           <div>
-
-            <h1>
-              Add New Product
-            </h1>
-
-            <p>
-              Connect your farm products with buyers across India.
-            </p>
-
+            <h1>Add New Product</h1>
+            <p>Connect your farm products with buyers across India.</p>
           </div>
-
         </div>
-
       </div>
 
-
-      {/* Success Message */}
-
       {successMessage && (
-
         <div className="seller-success-message">
-
           <CheckCircle2 size={20} />
-
           {successMessage}
-
         </div>
-
       )}
 
+      {errorMessage && (
+        <div className="seller-error-message">
+          <AlertCircle size={20} />
+          {errorMessage}
+        </div>
+      )}
 
-      {/* Main Form */}
-
-      <form
-        className="seller-product-form"
-        onSubmit={onSubmitProduct}
-      >
-
-        {/* Product Information */}
-
+      <form className="seller-product-form" onSubmit={onSubmitProduct}>
         <section className="seller-form-section">
-
           <div className="seller-form-section-header">
-
             <div className="seller-form-section-icon">
               <PackagePlus size={20} />
             </div>
-
             <div>
-
-              <h2>
-                Product Information
-              </h2>
-
-              <p>
-                Add the basic details of your product.
-              </p>
-
+              <h2>Product Information</h2>
+              <p>Add the basic details of your product.</p>
             </div>
-
           </div>
 
-
           <div className="seller-form-grid">
-
-            {/* Product Name */}
-
             <div className="seller-form-group seller-full-width">
-
-              <label>
-                Product Name
-              </label>
-
+              <label>Product Name</label>
               <input
                 type="text"
                 name="name"
@@ -227,62 +178,28 @@ const AddProduct = () => {
                 onChange={onChangeInput}
                 required
               />
-
             </div>
 
-
-            {/* Category */}
-
             <div className="seller-form-group">
-
-              <label>
-                Product Category
-              </label>
-
+              <label>Product Category</label>
               <select
                 name="category"
                 value={productData.category}
                 onChange={onChangeInput}
                 required
               >
-
-                <option value="">
-                  Select Category
-                </option>
-
-                <option value="fruits">
-                  🍎 Fruits
-                </option>
-
-                <option value="vegetables">
-                  🥕 Vegetables
-                </option>
-
-                <option value="animals">
-                  🐄 Animals
-                </option>
-
-                <option value="machines">
-                  🚜 Machines
-                </option>
-
+                <option value="">Select Category</option>
+                <option value="FRUIT">🍎 Fruit</option>
+                <option value="VEGETABLE">🥕 Vegetable</option>
+                <option value="ANIMAL">🐄 Animal</option>
+                <option value="MACHINE">🚜 Machine</option>
               </select>
-
             </div>
 
-
-            {/* Price */}
-
             <div className="seller-form-group">
-
-              <label>
-                Price
-              </label>
-
+              <label>Price</label>
               <div className="seller-input-with-icon">
-
                 <IndianRupee size={18} />
-
                 <input
                   type="number"
                   name="price"
@@ -290,53 +207,33 @@ const AddProduct = () => {
                   value={productData.price}
                   onChange={onChangeInput}
                   min="0"
+                  step="0.01"
                   required
                 />
-
               </div>
-
             </div>
 
-
-            {/* Quantity */}
-
             <div className="seller-form-group">
-
-              <label>
-                Available Quantity
-              </label>
-
+              <label>Available Quantity</label>
               <div className="seller-input-with-icon">
-
                 <Boxes size={18} />
-
                 <input
                   type="number"
-                  name="quantity"
+                  name="available_quantity"
                   placeholder="Enter quantity"
-                  value={productData.quantity}
+                  value={productData.available_quantity}
                   onChange={onChangeInput}
-                  min="1"
+                  min="0"
+                  step="0.01"
                   required
                 />
-
               </div>
-
             </div>
 
-
-            {/* Location */}
-
             <div className="seller-form-group">
-
-              <label>
-                Product Location
-              </label>
-
+              <label>Product Location</label>
               <div className="seller-input-with-icon">
-
                 <MapPin size={18} />
-
                 <input
                   type="text"
                   name="location"
@@ -345,24 +242,13 @@ const AddProduct = () => {
                   onChange={onChangeInput}
                   required
                 />
-
               </div>
-
             </div>
 
-
-            {/* Description */}
-
             <div className="seller-form-group seller-full-width">
-
-              <label>
-                Product Description
-              </label>
-
+              <label>Product Description</label>
               <div className="seller-textarea-wrapper">
-
                 <FileText size={18} />
-
                 <textarea
                   name="description"
                   placeholder="Describe your product, quality, freshness and other important details..."
@@ -371,180 +257,58 @@ const AddProduct = () => {
                   rows="5"
                   required
                 />
-
               </div>
-
             </div>
-
           </div>
-
         </section>
 
-
-        {/* Product Image */}
-
         <section className="seller-form-section">
-
           <div className="seller-form-section-header">
-
             <div className="seller-form-section-icon">
               <Image size={20} />
             </div>
-
             <div>
-
-              <h2>
-                Product Image
-              </h2>
-
-              <p>
-                Add a clear image of your product.
-              </p>
-
+              <h2>Product Image</h2>
+              <p>Add a clear image of your product.</p>
             </div>
-
           </div>
 
-
           <div className="seller-form-group">
-
-            <label>
-              Image URL
-            </label>
-
+            <label>Image URL</label>
             <div className="seller-input-with-icon">
-
               <Image size={18} />
-
               <input
                 type="url"
-                name="image"
+                name="image_url"
                 placeholder="https://example.com/product-image.jpg"
-                value={productData.image}
+                value={productData.image_url}
                 onChange={onChangeInput}
                 required
               />
-
             </div>
-
             <small className="seller-input-help">
-
               Use a clear image URL showing your product.
-
             </small>
-
           </div>
 
-
-          {productData.image && (
-
+          {productData.image_url && (
             <div className="seller-image-preview">
-
               <img
-                src={productData.image}
+                src={productData.image_url}
                 alt="Product Preview"
+                onError={event => {
+                  event.currentTarget.style.display = "none"
+                }}
               />
-
             </div>
-
           )}
-
         </section>
-
-
-        {/* Seller Information */}
-
-        <section className="seller-form-section">
-
-          <div className="seller-form-section-header">
-
-            <div className="seller-form-section-icon">
-              <User size={20} />
-            </div>
-
-            <div>
-
-              <h2>
-                Seller Information
-              </h2>
-
-              <p>
-                Help buyers connect with you.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div className="seller-form-grid">
-
-            {/* Seller Name */}
-
-            <div className="seller-form-group">
-
-              <label>
-                Seller / Farm Name
-              </label>
-
-              <div className="seller-input-with-icon">
-
-                <User size={18} />
-
-                <input
-                  type="text"
-                  name="sellerName"
-                  placeholder="Example: Raghupathi Farms"
-                  value={productData.sellerName}
-                  onChange={onChangeInput}
-                  required
-                />
-
-              </div>
-
-            </div>
-
-
-            {/* Phone */}
-
-            <div className="seller-form-group">
-
-              <label>
-                Contact Number
-              </label>
-
-              <div className="seller-input-with-icon">
-
-                <Phone size={18} />
-
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Enter contact number"
-                  value={productData.phone}
-                  onChange={onChangeInput}
-                  required
-                />
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* Buttons */}
 
         <div className="seller-form-actions">
-
           <button
             type="button"
             className="seller-cancel-button"
-            onClick={() =>
-              navigate("/seller/dashboard")
-            }
+            onClick={() => navigate("/seller/dashboard")}
           >
             Cancel
           </button>
@@ -552,20 +316,17 @@ const AddProduct = () => {
           <button
             type="submit"
             className="seller-submit-product-button"
+            disabled={isLoading}
           >
             <PackagePlus size={19} />
-            Add Product
+            {isLoading ? "Adding Product..." : "Add Product"}
           </button>
-
         </div>
-
       </form>
-        <Footer />  
 
+      <Footer />
     </div>
-
   )
-
 }
 
 export default AddProduct
