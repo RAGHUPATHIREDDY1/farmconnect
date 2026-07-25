@@ -13,7 +13,7 @@ import {
   CheckCircle2
 } from "lucide-react"
 import SellerHeader from "./SellerHeader"
-import Footer from "../Footer"
+import Footer from "../footer"
 import API_BASE_URL from "../../config/api"
 import "./seller.css"
 

@@ -15,7 +15,7 @@ import {
 } from "lucide-react"
 
 import Header from "../header"
-import Footer from "../Footer"
+import Footer from "../footer"
 import API_BASE_URL from "../../config/api"
 
 import "./index.css"

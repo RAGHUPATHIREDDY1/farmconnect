@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 
 import SellerHeader from "./SellerHeader"
-import Footer from "../Footer"
+import Footer from "../footer"
 import "./seller.css"
 
 const API_BASE_URL =
