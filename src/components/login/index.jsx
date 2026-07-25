@@ -1,6 +1,10 @@
 import {useState} from "react"
 import {useNavigate, Link} from "react-router-dom"
+import API_BASE_URL from "../../config/api"
 import "./index.css"
+
+const LOGIN_API_URL =
+  `${API_BASE_URL}/api/accounts/buyer/login/`
 
 const Login = () => {
   const navigate = useNavigate()
@@ -15,8 +19,10 @@ const Login = () => {
 
     setErrorMsg("")
 
-    if (!email || !password) {
-      setErrorMsg("Please enter email and password.")
+    if (!email.trim() || !password) {
+      setErrorMsg(
+        "Please enter email and password."
+      )
       return
     }
 
@@ -24,14 +30,18 @@ const Login = () => {
 
     try {
       const response = await fetch(
-        "https://farmconnectbackend.onrender.com/api/accounts/buyer/login/",
+        LOGIN_API_URL,
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json"
           },
+
           body: JSON.stringify({
-            email: email.toLowerCase().trim(),
+            email: email
+              .toLowerCase()
+              .trim(),
             password
           })
         }
@@ -47,7 +57,7 @@ const Login = () => {
 
         setErrorMsg(
           backendError ||
-          "Invalid email or password."
+            "Invalid email or password."
         )
 
         return
@@ -68,15 +78,18 @@ const Login = () => {
         JSON.stringify(data.user)
       )
 
-      navigate("/", {replace: true})
-
+      navigate("/", {
+        replace: true
+      })
     } catch (error) {
-      console.error("Login Error:", error)
-
-      setErrorMsg(
-        "Unable to connect to the server. Make sure Django is running."
+      console.error(
+        "Login Error:",
+        error
       )
 
+      setErrorMsg(
+        "Unable to connect to the server. Please try again."
+      )
     } finally {
       setIsLoading(false)
     }
@@ -84,11 +97,8 @@ const Login = () => {
 
   return (
     <div className="login-page">
-
       <div className="login-card">
-
         <div className="login-left">
-
           <h1>
             🌾 FarmConnect
           </h1>
@@ -103,11 +113,9 @@ const Login = () => {
             alt="Farm"
             className="login-image"
           />
-
         </div>
 
         <div className="login-right">
-
           <h2>
             Welcome Back 👋
           </h2>
@@ -120,7 +128,6 @@ const Login = () => {
             onSubmit={onSubmitLogin}
             className="login-form"
           >
-
             <label className="label">
               Email
             </label>
@@ -130,9 +137,12 @@ const Login = () => {
               placeholder="Enter Email"
               value={email}
               onChange={event =>
-                setEmail(event.target.value)
+                setEmail(
+                  event.target.value
+                )
               }
               className="input-field"
+              required
             />
 
             <label className="label">
@@ -144,9 +154,12 @@ const Login = () => {
               placeholder="Enter Password"
               value={password}
               onChange={event =>
-                setPassword(event.target.value)
+                setPassword(
+                  event.target.value
+                )
               }
               className="input-field"
+              required
             />
 
             {errorMsg && (
@@ -175,13 +188,9 @@ const Login = () => {
                 Register
               </Link>
             </p>
-
           </form>
-
         </div>
-
       </div>
-
     </div>
   )
 }

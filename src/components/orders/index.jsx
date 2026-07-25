@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import {useEffect, useState} from "react"
+import {useNavigate} from "react-router-dom"
 
 import {
   Package,
@@ -16,20 +16,18 @@ import {
 
 import Header from "../header"
 import Footer from "../Footer"
+import API_BASE_URL from "../../config/api"
 
 import "./index.css"
 
-
 const API_URL =
-  "https://farmconnectbackend.onrender.com/api/orders"
-
+  `${API_BASE_URL}/api/orders`
 
 const Orders = () => {
-
   const navigate = useNavigate()
 
-
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] =
+    useState([])
 
   const [isLoading, setIsLoading] =
     useState(true)
@@ -37,26 +35,13 @@ const Orders = () => {
   const [errorMessage, setErrorMessage] =
     useState("")
 
-
-  // =====================================================
-  // GET ACCESS TOKEN
-  // =====================================================
-
   const getAccessToken = () => {
-
     return localStorage.getItem(
       "accessToken"
     )
-
   }
 
-
-  // =====================================================
-  // LOGOUT
-  // =====================================================
-
   const logoutUser = () => {
-
     localStorage.removeItem(
       "accessToken"
     )
@@ -74,461 +59,233 @@ const Orders = () => {
     )
 
     navigate("/login")
-
   }
 
-
-  // =====================================================
-  // FETCH ORDERS
-  // =====================================================
-
   const fetchOrders = async () => {
-
     const accessToken =
       getAccessToken()
 
-
     if (!accessToken) {
-
       navigate("/login")
-
       return
-
     }
 
-
     setIsLoading(true)
-
     setErrorMessage("")
 
-
     try {
+      const response = await fetch(
+        `${API_URL}/my-orders/`,
+        {
+          method: "GET",
 
-      const response =
-        await fetch(
+          headers: {
+            Authorization:
+              `Bearer ${accessToken}`,
 
-          `${API_URL}/my-orders/`,
+            "Content-Type":
+              "application/json",
 
-          {
-
-            method: "GET",
-
-            headers: {
-
-              "Authorization":
-                `Bearer ${accessToken}`,
-
-              "Content-Type":
-                "application/json",
-
-              "Accept":
-                "application/json"
-
-            }
-
+            Accept:
+              "application/json"
           }
-
-        )
-
+        }
+      )
 
       const data =
         await response.json()
 
-
-      // =================================================
-      // TOKEN EXPIRED
-      // =================================================
-
-      if (
-        response.status === 401
-      ) {
-
+      if (response.status === 401) {
         logoutUser()
-
         return
-
       }
 
-
-      // =================================================
-      // OTHER API ERROR
-      // =================================================
-
-      if (
-        !response.ok
-      ) {
-
+      if (!response.ok) {
         setErrorMessage(
-
           data?.detail ||
-
-          data?.error ||
-
-          "Unable to load your orders."
-
+            data?.error ||
+            "Unable to load your orders."
         )
 
         return
-
       }
-
-
-      // =================================================
-      // HANDLE DIFFERENT RESPONSE FORMATS
-      // =================================================
 
       let ordersData = []
 
-
-      if (
-        Array.isArray(data)
+      if (Array.isArray(data)) {
+        ordersData = data
+      } else if (
+        Array.isArray(data.orders)
       ) {
-
-        ordersData =
-          data
-
+        ordersData = data.orders
+      } else if (
+        Array.isArray(data.results)
+      ) {
+        ordersData = data.results
       }
 
-      else if (
-        Array.isArray(
-          data.orders
-        )
-      ) {
-
-        ordersData =
-          data.orders
-
-      }
-
-      else if (
-        Array.isArray(
-          data.results
-        )
-      ) {
-
-        ordersData =
-          data.results
-
-      }
-
-
-      setOrders(
-        ordersData
-      )
-
-
+      setOrders(ordersData)
     } catch (error) {
-
       console.error(
         "Orders Fetch Error:",
         error
       )
 
-
       setErrorMessage(
-
         "Unable to connect to FarmConnect server."
-
       )
-
     } finally {
-
       setIsLoading(false)
-
     }
-
   }
 
-
-  // =====================================================
-  // LOAD ORDERS ON PAGE OPEN
-  // =====================================================
-
   useEffect(() => {
-
     fetchOrders()
-
   }, [])
-
-
-  // =====================================================
-  // TOTAL SPENT
-  // =====================================================
 
   const totalSpent =
     orders.reduce(
-
       (total, order) =>
-
         total +
-
         Number(
           order.total_amount || 0
         ),
-
       0
-
     )
-
-
-  // =====================================================
-  // STATUS CLASS
-  // =====================================================
 
   const getStatusClass =
     status => {
-
       return (
-
-        status ||
-
-        "PENDING"
-
+        status || "PENDING"
       )
         .toLowerCase()
         .replaceAll(
           "_",
           "-"
         )
-
     }
-
-
-  // =====================================================
-  // STATUS ICON
-  // =====================================================
 
   const getStatusIcon =
     status => {
-
-      switch (
-        status
-      ) {
-
+      switch (status) {
         case "DELIVERED":
-
           return (
-
             <CheckCircle2
               size={16}
             />
-
           )
 
-
         case "SHIPPED":
-
         case "OUT_FOR_DELIVERY":
-
           return (
-
             <Truck
               size={16}
             />
-
           )
 
-
         case "CANCELLED":
-
           return (
-
             <XCircle
               size={16}
             />
-
           )
 
-
         case "CONFIRMED":
-
         case "PROCESSING":
-
           return (
-
             <Package
               size={16}
             />
-
           )
 
-
         default:
-
           return (
-
             <Clock3
               size={16}
             />
-
           )
-
       }
-
     }
 
-
-  // =====================================================
-  // LOADING
-  // =====================================================
-
-  if (
-    isLoading
-  ) {
-
+  if (isLoading) {
     return (
-
       <>
-
         <Header />
 
-
-        <main
-          className="orders-loading"
-        >
-
+        <main className="orders-loading">
           <LoaderCircle
             size={42}
             className="orders-loader"
           />
 
-
           <h2>
             Loading Your Orders
           </h2>
 
-
           <p>
             Please wait while we fetch your orders.
           </p>
-
         </main>
 
-
         <Footer />
-
       </>
-
     )
-
   }
 
-
-  // =====================================================
-  // MAIN UI
-  // =====================================================
-
   return (
-
     <>
-
       <Header />
 
-
-      <main
-        className="orders-page"
-      >
-
-
-        {/* ================================
-            HERO
-        ================================= */}
-
-        <section
-          className="orders-hero"
-        >
-
-          <div
-            className="orders-hero-content"
-          >
-
-            <div
-              className="orders-hero-icon"
-            >
-
+      <main className="orders-page">
+        <section className="orders-hero">
+          <div className="orders-hero-content">
+            <div className="orders-hero-icon">
               <ShoppingBag
                 size={30}
               />
-
             </div>
 
-
             <div>
-
               <h1>
                 My Orders
               </h1>
 
-
               <p>
                 Track and manage all your FarmConnect purchases.
               </p>
-
             </div>
-
           </div>
-
         </section>
 
-
-        {/* ================================
-            ERROR
-        ================================= */}
-
         {errorMessage && (
-
-          <div
-            className="orders-error"
-          >
-
+          <div className="orders-error">
             <AlertCircle
               size={20}
             />
 
-
             <span>
               {errorMessage}
             </span>
-
           </div>
-
         )}
-
-
-        {/* ================================
-            EMPTY ORDERS
-        ================================= */}
 
         {!errorMessage &&
         orders.length === 0 ? (
-
-          <section
-            className="empty-orders"
-          >
-
-            <div
-              className="empty-orders-icon"
-            >
-
+          <section className="empty-orders">
+            <div className="empty-orders-icon">
               <Package
                 size={48}
               />
-
             </div>
-
 
             <h2>
               No Orders Yet
             </h2>
 
-
             <p>
-
               You haven't placed any orders yet.
               Start shopping and your orders will appear here.
-
             </p>
-
 
             <button
               className="start-shopping-button"
@@ -536,479 +293,259 @@ const Orders = () => {
                 navigate("/fruits")
               }
             >
-
               Start Shopping
-
 
               <ArrowRight
                 size={18}
               />
-
             </button>
-
           </section>
-
         ) : (
-
           <>
-
-
-            {/* ================================
-                SUMMARY
-            ================================= */}
-
-            <section
-              className="orders-summary"
-            >
-
-
-              <div
-                className="summary-card"
-              >
-
-                <div
-                  className="summary-icon"
-                >
-
+            <section className="orders-summary">
+              <div className="summary-card">
+                <div className="summary-icon">
                   <ShoppingBag
                     size={22}
                   />
-
                 </div>
 
-
                 <div>
-
                   <span>
                     Total Orders
                   </span>
 
-
                   <strong>
                     {orders.length}
                   </strong>
-
                 </div>
-
               </div>
 
-
-              <div
-                className="summary-card"
-              >
-
-                <div
-                  className="summary-icon"
-                >
-
+              <div className="summary-card">
+                <div className="summary-icon">
                   <IndianRupee
                     size={22}
                   />
-
                 </div>
 
-
                 <div>
-
                   <span>
                     Total Spent
                   </span>
 
-
                   <strong>
-
-                    ₹{
-
-                      totalSpent.toLocaleString(
-                        "en-IN"
-                      )
-
-                    }
-
+                    ₹
+                    {totalSpent.toLocaleString(
+                      "en-IN"
+                    )}
                   </strong>
-
                 </div>
-
               </div>
 
-
-              <div
-                className="summary-card"
-              >
-
-                <div
-                  className="summary-icon"
-                >
-
+              <div className="summary-card">
+                <div className="summary-icon">
                   <CheckCircle2
                     size={22}
                   />
-
                 </div>
 
-
                 <div>
-
                   <span>
                     Delivered Orders
                   </span>
 
-
                   <strong>
-
                     {
-
                       orders.filter(
-
                         order =>
-
                           order.status ===
                           "DELIVERED"
-
                       ).length
-
                     }
-
                   </strong>
-
                 </div>
-
               </div>
-
-
             </section>
 
-
-            {/* ================================
-                ORDERS LIST
-            ================================= */}
-
-            <section
-              className="orders-section"
-            >
-
-
-              <div
-                className="orders-section-header"
-              >
-
+            <section className="orders-section">
+              <div className="orders-section-header">
                 <div>
-
                   <h2>
                     Recent Orders
                   </h2>
 
-
                   <p>
                     View your order details and status.
                   </p>
-
                 </div>
-
               </div>
 
+              <div className="orders-list">
+                {orders.map(order => (
+                  <article
+                    className="order-card"
+                    key={order.id}
+                  >
+                    <div className="order-card-header">
+                      <div>
+                        <span className="order-label">
+                          Order ID
+                        </span>
 
-              <div
-                className="orders-list"
-              >
-
-
-                {orders.map(
-
-                  order => (
-
-                    <article
-                      className="order-card"
-                      key={order.id}
-                    >
-
-
-                      {/* ==========================
-                          ORDER HEADER
-                      =========================== */}
-
-                      <div
-                        className="order-card-header"
-                      >
-
-                        <div>
-
-                          <span
-                            className="order-label"
-                          >
-                            Order ID
-                          </span>
-
-
-                          <strong
-                            className="order-id"
-                          >
-
-                            {order.order_id}
-
-                          </strong>
-
-                        </div>
-
-
-                        <div
-                          className="order-date"
-                        >
-
-                          {order.created_at &&
-
-                            new Date(
-                              order.created_at
-                            ).toLocaleDateString(
-
-                              "en-IN",
-
-                              {
-
-                                day:
-                                  "2-digit",
-
-                                month:
-                                  "short",
-
-                                year:
-                                  "numeric"
-
-                              }
-
-                            )
-
-                          }
-
-                        </div>
-
+                        <strong className="order-id">
+                          {order.order_id}
+                        </strong>
                       </div>
 
+                      <div className="order-date">
+                        {order.created_at &&
+                          new Date(
+                            order.created_at
+                          ).toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric"
+                            }
+                          )}
+                      </div>
+                    </div>
 
-                      {/* ==========================
-                          PRODUCTS
-                      =========================== */}
-
-                      <div
-                        className="order-products"
-                      >
-
-
-                        {order.items?.map(
-
-                          item => (
-
-                            <div
-                              className="order-product"
-                              key={item.id}
-                            >
-
-
-                              <div
-                                className="product-image-wrapper"
-                              >
-
-                                <img
-                                  src={
-                                    item.product_image
-                                  }
-                                  alt={
-                                    item.product_name
-                                  }
-                                  className="order-product-image"
-                                  onError={event => {
-
+                    <div className="order-products">
+                      {order.items?.map(
+                        item => (
+                          <div
+                            className="order-product"
+                            key={item.id}
+                          >
+                            <div className="product-image-wrapper">
+                              <img
+                                src={
+                                  item.product_image
+                                }
+                                alt={
+                                  item.product_name
+                                }
+                                className="order-product-image"
+                                onError={
+                                  event => {
                                     event.currentTarget.src =
                                       "/placeholder-product.png"
-
-                                  }}
-                                />
-
-                              </div>
-
-
-                              <div
-                                className="order-product-info"
-                              >
-
-                                <h3>
-                                  {item.product_name}
-                                </h3>
-
-
-                                <p>
-                                  Qty: {item.quantity}
-                                </p>
-
-
-                                <span>
-
-                                  ₹{
-
-                                    Number(
-                                      item.price ||
-                                      0
-                                    ).toLocaleString(
-                                      "en-IN"
-                                    )
-
                                   }
-
-                                </span>
-
-                              </div>
-
-
-                              <strong
-                                className="item-total"
-                              >
-
-                                ₹{
-
-                                  Number(
-                                    item.subtotal ||
-                                    0
-                                  ).toLocaleString(
-                                    "en-IN"
-                                  )
-
                                 }
-
-                              </strong>
-
+                              />
                             </div>
 
-                          )
+                            <div className="order-product-info">
+                              <h3>
+                                {
+                                  item.product_name
+                                }
+                              </h3>
 
-                        )}
+                              <p>
+                                Qty:{" "}
+                                {
+                                  item.quantity
+                                }
+                              </p>
 
-                      </div>
+                              <span>
+                                ₹
+                                {Number(
+                                  item.price ||
+                                    0
+                                ).toLocaleString(
+                                  "en-IN"
+                                )}
+                              </span>
+                            </div>
 
-
-                      {/* ==========================
-                          ORDER FOOTER
-                      =========================== */}
-
-                      <div
-                        className="order-card-footer"
-                      >
-
-
-                        <div
-                          className="order-status-wrapper"
-                        >
-
-                          <span
-                            className="order-label"
-                          >
-                            Order Status
-                          </span>
-
-
-                          <span
-                            className={`
-                              order-status
-                              ${getStatusClass(
-                                order.status
-                              )}
-                            `}
-                          >
-
-                            {getStatusIcon(
-                              order.status
-                            )}
-
-
-                            {(
-
-                              order.status ||
-                              "PENDING"
-
-                            ).replaceAll(
-                              "_",
-                              " "
-                            )}
-
-                          </span>
-
-                        </div>
-
-
-                        <div
-                          className="order-total"
-                        >
-
-                          <span>
-                            Total Amount
-                          </span>
-
-
-                          <strong>
-
-                            ₹{
-
-                              Number(
-                                order.total_amount ||
-                                0
+                            <strong className="item-total">
+                              ₹
+                              {Number(
+                                item.subtotal ||
+                                  0
                               ).toLocaleString(
                                 "en-IN"
-                              )
+                              )}
+                            </strong>
+                          </div>
+                        )
+                      )}
+                    </div>
 
-                            }
+                    <div className="order-card-footer">
+                      <div className="order-status-wrapper">
+                        <span className="order-label">
+                          Order Status
+                        </span>
 
-                          </strong>
-
-                        </div>
-
-
-                        <button
-                          className="view-order-button"
-                          onClick={() =>
-
-                            navigate(
-
-                              `/orders/${order.order_id}`
-
-                            )
-
-                          }
+                        <span
+                          className={`
+                            order-status
+                            ${getStatusClass(
+                              order.status
+                            )}
+                          `}
                         >
+                          {getStatusIcon(
+                            order.status
+                          )}
 
-                          View Details
-
-
-                          <ArrowRight
-                            size={17}
-                          />
-
-                        </button>
-
+                          {(
+                            order.status ||
+                            "PENDING"
+                          ).replaceAll(
+                            "_",
+                            " "
+                          )}
+                        </span>
                       </div>
 
-                    </article>
+                      <div className="order-total">
+                        <span>
+                          Total Amount
+                        </span>
 
-                  )
+                        <strong>
+                          ₹
+                          {Number(
+                            order.total_amount ||
+                              0
+                          ).toLocaleString(
+                            "en-IN"
+                          )}
+                        </strong>
+                      </div>
 
-                )}
+                      <button
+                        className="view-order-button"
+                        onClick={() =>
+                          navigate(
+                            `/orders/${order.order_id}`
+                          )
+                        }
+                      >
+                        View Details
 
+                        <ArrowRight
+                          size={17}
+                        />
+                      </button>
+                    </div>
+                  </article>
+                ))}
               </div>
-
             </section>
-
           </>
-
         )}
-
       </main>
 
-
       <Footer />
-
     </>
-
   )
-
 }
-
 
 export default Orders

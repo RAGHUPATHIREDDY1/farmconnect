@@ -1,6 +1,8 @@
 import {useEffect, useState} from "react"
+import {useNavigate} from "react-router-dom"
 import Header from "../header"
 import Footer from "../Footer"
+import API_BASE_URL from "../../config/api"
 import "./index.css"
 
 const Fruits = () => {
@@ -9,11 +11,13 @@ const Fruits = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
 
+  const navigate = useNavigate()
+
   useEffect(() => {
     const getFruitsData = async () => {
       try {
         const response = await fetch(
-          "https://farmconnectbackend.onrender.com/api/products/?category=FRUIT"
+          `${API_BASE_URL}/api/products/?category=FRUIT`
         )
 
         if (!response.ok) {
@@ -40,61 +44,61 @@ const Fruits = () => {
     getFruitsData()
   }, [])
 
- const onClickBuy = async eachProduct => {
-  const accessToken = localStorage.getItem("accessToken")
+  const onClickBuy = async eachProduct => {
+    const accessToken = localStorage.getItem("accessToken")
 
-  if (!accessToken) {
-    alert("Please login as a buyer first.")
-    navigate("/login")
-    return
-  }
-
-  try {
-    const response = await fetch(
-      "https://farmconnectbackend.onrender.com/api/orders/cart/add/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          product_id: eachProduct.id,
-          quantity: 1
-        })
-      }
-    )
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      alert(data.error || "Unable to add product to cart.")
+    if (!accessToken) {
+      alert("Please login as a buyer first.")
+      navigate("/login")
       return
     }
 
-    alert(`${eachProduct.name} added to cart successfully.`)
-  } catch (error) {
-    console.error("Add To Cart Error:", error)
-    alert("Unable to connect to the server.")
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/orders/cart/add/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            product_id: eachProduct.id,
+            quantity: 1,
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        alert(data.error || "Unable to add product to cart.")
+        return
+      }
+
+      alert(`${eachProduct.name} added to cart successfully.`)
+    } catch (error) {
+      console.error("Add To Cart Error:", error)
+      alert("Unable to connect to the server.")
+    }
   }
-}
-  const filteredList =
-    fruitsList.filter(eachFruit =>
-      eachFruit.name
-        ?.toLowerCase()
-        .includes(
-          searchInput.toLowerCase()
-        )
-    )
+
+  const filteredList = fruitsList.filter(eachFruit =>
+    eachFruit.name
+      ?.toLowerCase()
+      .includes(searchInput.toLowerCase())
+  )
 
   return (
     <>
       <Header />
+
       <div className="fruits-container">
         <section className="fruits-hero">
           <h1 className="main-heading">
             🍎 Fresh Fruits Collection
           </h1>
+
           <p className="hero-subtitle">
             Handpicked fresh fruits directly from trusted farmers.
           </p>
@@ -128,9 +132,8 @@ const Fruits = () => {
           !errorMessage &&
           filteredList.length === 0 && (
             <div className="empty-container">
-              <h2>
-                No Fruits Available 🍎
-              </h2>
+              <h2>No Fruits Available 🍎</h2>
+
               <p>
                 Sellers have not added any fruits yet.
               </p>
@@ -184,8 +187,7 @@ const Fruits = () => {
                     </p>
 
                     <p className="fruit-quantity">
-                      📦 Available:
-                      {" "}
+                      📦 Available:{" "}
                       {eachFruit.available_quantity}
                     </p>
 
@@ -203,6 +205,7 @@ const Fruits = () => {
             </div>
           )}
       </div>
+
       <Footer />
     </>
   )

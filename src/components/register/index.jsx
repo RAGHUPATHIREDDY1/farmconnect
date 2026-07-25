@@ -1,33 +1,59 @@
 import {useState} from "react"
 import {useNavigate, Link} from "react-router-dom"
+import API_BASE_URL from "../../config/api"
 import "./index.css"
+
+const INITIAL_FORM_DATA = {
+  full_name: "",
+  email: "",
+  password: "",
+  confirm_password: "",
+  phone_number: "",
+  address: "",
+  city: "",
+  state: "",
+  pincode: ""
+}
 
 const Register = () => {
   const navigate = useNavigate()
 
-  const [formData, setFormData] = useState({
-    full_name: "",
-    email: "",
-    password: "",
-    confirm_password: "",
-    phone_number: "",
-    address: "",
-    city: "",
-    state: "",
-    pincode: ""
-  })
+  const [formData, setFormData] =
+    useState(INITIAL_FORM_DATA)
 
-  const [errorMsg, setErrorMsg] = useState("")
-  const [successMsg, setSuccessMsg] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [errorMsg, setErrorMsg] =
+    useState("")
+
+  const [successMsg, setSuccessMsg] =
+    useState("")
+
+  const [isLoading, setIsLoading] =
+    useState(false)
 
   const onChangeInput = event => {
-    const {name, value} = event.target
+    const {
+      name,
+      value
+    } = event.target
 
     setFormData(previousData => ({
       ...previousData,
       [name]: value
     }))
+  }
+
+  const getBackendError = data => {
+    if (!data) {
+      return ""
+    }
+
+    if (typeof data === "string") {
+      return data
+    }
+
+    return Object.values(data)
+      .flat()
+      .join(" ")
   }
 
   const onSubmitForm = async event => {
@@ -49,27 +75,36 @@ const Register = () => {
     } = formData
 
     if (
-      !full_name ||
-      !email ||
+      !full_name.trim() ||
+      !email.trim() ||
       !password ||
       !confirm_password ||
-      !phone_number ||
-      !address ||
-      !city ||
-      !state ||
-      !pincode
+      !phone_number.trim() ||
+      !address.trim() ||
+      !city.trim() ||
+      !state.trim() ||
+      !pincode.trim()
     ) {
-      setErrorMsg("Please fill all fields.")
+      setErrorMsg(
+        "Please fill all fields."
+      )
+
       return
     }
 
     if (password.length < 8) {
-      setErrorMsg("Password must contain at least 8 characters.")
+      setErrorMsg(
+        "Password must contain at least 8 characters."
+      )
+
       return
     }
 
     if (password !== confirm_password) {
-      setErrorMsg("Passwords do not match.")
+      setErrorMsg(
+        "Passwords do not match."
+      )
+
       return
     }
 
@@ -77,36 +112,55 @@ const Register = () => {
 
     try {
       const response = await fetch(
-        "https://farmconnectbackend.onrender.com/api/accounts/buyer/register/",
+        `${API_BASE_URL}/api/accounts/buyer/register/`,
         {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type":
+              "application/json",
+
+            Accept:
+              "application/json"
           },
+
           body: JSON.stringify({
-            full_name,
-            email: email.toLowerCase().trim(),
+            full_name:
+              full_name.trim(),
+
+            email:
+              email.toLowerCase().trim(),
+
             password,
-            phone_number,
-            address,
-            city,
-            state,
-            pincode
+
+            phone_number:
+              phone_number.trim(),
+
+            address:
+              address.trim(),
+
+            city:
+              city.trim(),
+
+            state:
+              state.trim(),
+
+            pincode:
+              pincode.trim()
           })
         }
       )
 
-      const data = await response.json()
+      const data =
+        await response.json()
 
       if (!response.ok) {
         const backendError =
-          Object.values(data)
-            .flat()
-            .join(" ")
+          getBackendError(data)
 
         setErrorMsg(
           backendError ||
-          "Registration failed. Please try again."
+            "Registration failed. Please try again."
         )
 
         return
@@ -116,29 +170,22 @@ const Register = () => {
         "Buyer account created successfully! Redirecting to login..."
       )
 
-      setFormData({
-        full_name: "",
-        email: "",
-        password: "",
-        confirm_password: "",
-        phone_number: "",
-        address: "",
-        city: "",
-        state: "",
-        pincode: ""
-      })
+      setFormData(
+        INITIAL_FORM_DATA
+      )
 
       setTimeout(() => {
         navigate("/login")
       }, 1500)
-
     } catch (error) {
-      console.error("Registration Error:", error)
-
-      setErrorMsg(
-        "Unable to connect to the server. Make sure Django is running."
+      console.error(
+        "Registration Error:",
+        error
       )
 
+      setErrorMsg(
+        "Unable to connect to the FarmConnect server. Please try again."
+      )
     } finally {
       setIsLoading(false)
     }
@@ -147,7 +194,6 @@ const Register = () => {
   return (
     <div className="register-main-container">
       <div className="register-card">
-
         <div className="register-left-section">
           <h1 className="register-heading">
             🌾 FarmConnect
@@ -166,7 +212,6 @@ const Register = () => {
         </div>
 
         <div className="register-right-section">
-
           <h1 className="form-heading">
             Create Buyer Account
           </h1>
@@ -179,7 +224,6 @@ const Register = () => {
             className="register-form"
             onSubmit={onSubmitForm}
           >
-
             <label className="label">
               Full Name
             </label>
@@ -189,8 +233,12 @@ const Register = () => {
               name="full_name"
               className="input"
               placeholder="Enter your full name"
-              value={formData.full_name}
-              onChange={onChangeInput}
+              value={
+                formData.full_name
+              }
+              onChange={
+                onChangeInput
+              }
             />
 
             <label className="label">
@@ -202,8 +250,12 @@ const Register = () => {
               name="email"
               className="input"
               placeholder="Enter your email"
-              value={formData.email}
-              onChange={onChangeInput}
+              value={
+                formData.email
+              }
+              onChange={
+                onChangeInput
+              }
             />
 
             <label className="label">
@@ -215,8 +267,12 @@ const Register = () => {
               name="phone_number"
               className="input"
               placeholder="Enter phone number"
-              value={formData.phone_number}
-              onChange={onChangeInput}
+              value={
+                formData.phone_number
+              }
+              onChange={
+                onChangeInput
+              }
             />
 
             <label className="label">
@@ -228,8 +284,12 @@ const Register = () => {
               name="address"
               className="input"
               placeholder="Enter your address"
-              value={formData.address}
-              onChange={onChangeInput}
+              value={
+                formData.address
+              }
+              onChange={
+                onChangeInput
+              }
             />
 
             <label className="label">
@@ -241,8 +301,12 @@ const Register = () => {
               name="city"
               className="input"
               placeholder="Enter city"
-              value={formData.city}
-              onChange={onChangeInput}
+              value={
+                formData.city
+              }
+              onChange={
+                onChangeInput
+              }
             />
 
             <label className="label">
@@ -254,8 +318,12 @@ const Register = () => {
               name="state"
               className="input"
               placeholder="Enter state"
-              value={formData.state}
-              onChange={onChangeInput}
+              value={
+                formData.state
+              }
+              onChange={
+                onChangeInput
+              }
             />
 
             <label className="label">
@@ -267,8 +335,12 @@ const Register = () => {
               name="pincode"
               className="input"
               placeholder="Enter pincode"
-              value={formData.pincode}
-              onChange={onChangeInput}
+              value={
+                formData.pincode
+              }
+              onChange={
+                onChangeInput
+              }
             />
 
             <label className="label">
@@ -280,8 +352,12 @@ const Register = () => {
               name="password"
               className="input"
               placeholder="Enter password"
-              value={formData.password}
-              onChange={onChangeInput}
+              value={
+                formData.password
+              }
+              onChange={
+                onChangeInput
+              }
             />
 
             <label className="label">
@@ -293,8 +369,12 @@ const Register = () => {
               name="confirm_password"
               className="input"
               placeholder="Confirm password"
-              value={formData.confirm_password}
-              onChange={onChangeInput}
+              value={
+                formData.confirm_password
+              }
+              onChange={
+                onChangeInput
+              }
             />
 
             {errorMsg && (
@@ -329,11 +409,8 @@ const Register = () => {
                 Login
               </Link>
             </p>
-
           </form>
-
         </div>
-
       </div>
     </div>
   )

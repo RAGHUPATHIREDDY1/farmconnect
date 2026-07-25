@@ -1,34 +1,55 @@
-import {useEffect, useState} from "react"
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import Header from "../header"
 import Footer from "../Footer"
 import "./index.css"
 
+const API_URL =
+  "https://farmconnectbackend.onrender.com/api/products/?category=VEGETABLE"
+
+const CART_API_URL =
+  "https://farmconnectbackend.onrender.com/api/orders/cart/add/"
+
 const Vegetables = () => {
+  const navigate = useNavigate()
+
   const [vegetablesList, setVegetablesList] = useState([])
   const [searchInput, setSearchInput] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
+  const [addingProductId, setAddingProductId] = useState(null)
 
   useEffect(() => {
     const getVegetablesData = async () => {
-      try {
-        const response = await fetch(
-          "https://farmconnectbackend.onrender.com/api/products/?category=VEGETABLE"
-        )
+      setIsLoading(true)
+      setErrorMessage("")
 
-        if (!response.ok) {
-          throw new Error("Unable to load vegetables")
-        }
+      try {
+        const response = await fetch(API_URL)
 
         const data = await response.json()
 
-        setVegetablesList(
-          Array.isArray(data)
-            ? data
-            : data.results || []
-        )
+        if (!response.ok) {
+          setErrorMessage(
+            data.detail ||
+              data.error ||
+              "Unable to load vegetables."
+          )
+          return
+        }
+
+        const vegetablesData = Array.isArray(data)
+          ? data
+          : Array.isArray(data.results)
+          ? data.results
+          : Array.isArray(data.products)
+          ? data.products
+          : []
+
+        setVegetablesList(vegetablesData)
       } catch (error) {
-        console.error("Vegetables Error:", error)
+        console.error("Vegetables Fetch Error:", error)
+
         setErrorMessage(
           "Unable to connect to the server. Please try again."
         )
@@ -40,59 +61,71 @@ const Vegetables = () => {
     getVegetablesData()
   }, [])
 
-const onClickBuy = async eachProduct => {
-  const accessToken = localStorage.getItem("accessToken")
+  const onClickBuy = async product => {
+    const accessToken = localStorage.getItem("accessToken")
 
-  if (!accessToken) {
-    alert("Please login as a buyer first.")
-    navigate("/login")
-    return
-  }
-
-  try {
-    const response = await fetch(
-      "https://farmconnectbackend.onrender.com/api/orders/cart/add/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          product_id: eachProduct.id,
-          quantity: 1
-        })
-      }
-    )
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      alert(data.error || "Unable to add product to cart.")
+    if (!accessToken) {
+      alert("Please login as a buyer first.")
+      navigate("/login")
       return
     }
 
-    alert(`${eachProduct.name} added to cart successfully.`)
-  } catch (error) {
-    console.error("Add To Cart Error:", error)
-    alert("Unable to connect to the server.")
-  }
-}
+    setAddingProductId(product.id)
 
-  const filteredList =
-    vegetablesList.filter(eachVegetable =>
-      eachVegetable.name
-        ?.toLowerCase()
-        .includes(
-          searchInput.toLowerCase()
+    try {
+      const response = await fetch(CART_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          product_id: product.id,
+          quantity: 1
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.status === 401) {
+        localStorage.removeItem("accessToken")
+        localStorage.removeItem("refreshToken")
+        localStorage.removeItem("user")
+
+        alert("Your session has expired. Please login again.")
+        navigate("/login")
+        return
+      }
+
+      if (!response.ok) {
+        alert(
+          data.error ||
+            data.detail ||
+            "Unable to add product to cart."
         )
-    )
+        return
+      }
+
+      alert(`${product.name} added to cart successfully.`)
+    } catch (error) {
+      console.error("Add To Cart Error:", error)
+      alert("Unable to connect to the server.")
+    } finally {
+      setAddingProductId(null)
+    }
+  }
+
+  const filteredList = vegetablesList.filter(eachVegetable =>
+    String(eachVegetable.name || "")
+      .toLowerCase()
+      .includes(searchInput.toLowerCase())
+  )
 
   return (
     <>
       <Header />
 
-      <div className="vegetables-container">
+      <main className="vegetables-container">
         <section className="vegetables-hero">
           <h1 className="main-heading">
             🥕 Fresh Vegetables Collection
@@ -103,65 +136,89 @@ const onClickBuy = async eachProduct => {
           </p>
         </section>
 
-        <div className="search-container">
+        <section className="search-container">
           <input
             type="search"
-            placeholder="Search Fresh Vegetables..."
+            placeholder="Search Fresh Vegetables"
             className="search-input"
             value={searchInput}
             onChange={event =>
-              setSearchInput(
-                event.target.value
-              )
+              setSearchInput(event.target.value)
             }
           />
-        </div>
+        </section>
 
         {isLoading && (
-          <div className="empty-container">
-            <h2>
-              Loading Fresh Vegetables... 🥕
-            </h2>
-          </div>
+          <section className="empty-container">
+            <h2>Loading Fresh Vegetables 🥕</h2>
+            <p>Please wait while we load the latest products.</p>
+          </section>
         )}
 
         {!isLoading && errorMessage && (
-          <div className="empty-container">
-            <h2>
-              {errorMessage}
-            </h2>
-          </div>
+          <section className="empty-container">
+            <h2>{errorMessage}</h2>
+
+            <button
+              className="buy-button"
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </button>
+          </section>
         )}
 
         {!isLoading &&
           !errorMessage &&
-          filteredList.length === 0 && (
-            <div className="empty-container">
-              <h2>
-                No Vegetables Available 🥕
-              </h2>
+          vegetablesList.length === 0 && (
+            <section className="empty-container">
+              <h2>No Vegetables Available 🥕</h2>
 
               <p>
                 Sellers have not added any vegetables yet.
               </p>
-            </div>
+            </section>
+          )}
+
+        {!isLoading &&
+          !errorMessage &&
+          vegetablesList.length > 0 &&
+          filteredList.length === 0 && (
+            <section className="empty-container">
+              <h2>No Vegetables Found 🔍</h2>
+
+              <p>
+                No vegetables match your search.
+              </p>
+
+              <button
+                className="buy-button"
+                onClick={() => setSearchInput("")}
+              >
+                Clear Search
+              </button>
+            </section>
           )}
 
         {!isLoading &&
           !errorMessage &&
           filteredList.length > 0 && (
-            <div className="vegetables-list-container">
+            <section className="vegetables-list-container">
               {filteredList.map(eachVegetable => (
-                <div
+                <article
                   className="vegetable-card"
                   key={eachVegetable.id}
                 >
                   <div className="image-container">
                     <img
-                      src={eachVegetable.image_url}
+                      src={
+                        eachVegetable.image_url ||
+                        "https://via.placeholder.com/500x350?text=No+Image"
+                      }
                       alt={eachVegetable.name}
                       className="vegetable-image"
                       onError={event => {
+                        event.currentTarget.onerror = null
                         event.currentTarget.src =
                           "https://via.placeholder.com/500x350?text=No+Image"
                       }}
@@ -182,39 +239,44 @@ const onClickBuy = async eachProduct => {
                     </h2>
 
                     <p className="vegetable-price">
-                      ₹ {eachVegetable.price}
+                      ₹ {Number(eachVegetable.price || 0).toLocaleString("en-IN")}
                     </p>
 
                     <p className="vegetable-description">
-                      {eachVegetable.description}
+                      {eachVegetable.description ||
+                        "Fresh quality vegetables from trusted farmers."}
                     </p>
 
                     <p className="vegetable-location">
-                      📍 {eachVegetable.location}
+                      📍{" "}
+                      {eachVegetable.location ||
+                        "Location not available"}
                     </p>
 
                     <p className="vegetable-quantity">
-                      📦 Available:
-                      {" "}
+                      📦 Available:{" "}
                       {eachVegetable.available_quantity}
                     </p>
 
                     <button
                       className="buy-button"
                       onClick={() =>
-                        onClickBuy(
-                          eachVegetable
-                        )
+                        onClickBuy(eachVegetable)
+                      }
+                      disabled={
+                        addingProductId === eachVegetable.id
                       }
                     >
-                      Add To Cart 🛒
+                      {addingProductId === eachVegetable.id
+                        ? "Adding..."
+                        : "Add To Cart 🛒"}
                     </button>
                   </div>
-                </div>
+                </article>
               ))}
-            </div>
+            </section>
           )}
-      </div>
+      </main>
 
       <Footer />
     </>

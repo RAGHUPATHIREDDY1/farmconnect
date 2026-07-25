@@ -1,4 +1,6 @@
-import { useNavigate } from "react-router-dom"
+import {useEffect, useState} from "react"
+import {useNavigate} from "react-router-dom"
+
 import {
   Plus,
   Package,
@@ -10,28 +12,234 @@ import {
   Tractor,
   Beef,
   TrendingUp,
-  MapPin
+  RefreshCw,
+  AlertCircle,
+  BarChart3
 } from "lucide-react"
 
 import SellerHeader from "./SellerHeader"
 import Footer from "../Footer"
 import "./seller.css"
 
+const API_BASE_URL =
+  "https://farmconnectbackend.onrender.com/api"
 
 const SellerDashboard = () => {
-
   const navigate = useNavigate()
 
+  const [products, setProducts] = useState([])
+  const [orders, setOrders] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+
+  const getAccessToken = () => {
+    return localStorage.getItem("accessToken")
+  }
+
+  const logoutSeller = () => {
+    localStorage.removeItem("accessToken")
+    localStorage.removeItem("refreshToken")
+    localStorage.removeItem("user")
+    localStorage.removeItem("currentUser")
+
+    navigate("/seller/login", {
+      replace: true
+    })
+  }
+
+  const fetchDashboardData = async () => {
+    const accessToken = getAccessToken()
+
+    if (!accessToken) {
+      logoutSeller()
+      return
+    }
+
+    setIsLoading(true)
+    setErrorMessage("")
+
+    try {
+      const productsResponse = await fetch(
+        `${API_BASE_URL}/products/seller/products/`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: "application/json"
+          }
+        }
+      )
+
+      if (productsResponse.status === 401) {
+        logoutSeller()
+        return
+      }
+
+      const productsData =
+        await productsResponse.json()
+
+      if (!productsResponse.ok) {
+        setErrorMessage(
+          productsData.detail ||
+            productsData.error ||
+            "Unable to load dashboard data."
+        )
+
+        return
+      }
+
+      const productList = Array.isArray(productsData)
+        ? productsData
+        : productsData.results ||
+          productsData.products ||
+          []
+
+      setProducts(productList)
+
+      /*
+        Change this endpoint if your seller order
+        endpoint has a different URL.
+      */
+
+      const ordersResponse = await fetch(
+        `${API_BASE_URL}/orders/seller-orders/`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: "application/json"
+          }
+        }
+      )
+
+      if (ordersResponse.ok) {
+        const ordersData =
+          await ordersResponse.json()
+
+        const orderList = Array.isArray(
+          ordersData
+        )
+          ? ordersData
+          : ordersData.results ||
+            ordersData.orders ||
+            []
+
+        setOrders(orderList)
+      }
+    } catch (error) {
+      console.error(
+        "Seller Dashboard Error:",
+        error
+      )
+
+      setErrorMessage(
+        "Unable to connect to the server."
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const totalProducts = products.length
+
+  const totalOrders = orders.length
+
+  const totalEarnings = orders.reduce(
+    (total, order) => {
+      return (
+        total +
+        Number(
+          order.total_amount ||
+            order.total ||
+            0
+        )
+      )
+    },
+    0
+  )
+
+  const availableProducts =
+    products.filter(
+      product =>
+        product.is_available !== false
+    ).length
+
+  const recentOrders = orders.slice(0, 5)
+
+  const formatAmount = amount => {
+    return Number(
+      amount || 0
+    ).toLocaleString("en-US")
+  }
+
+  const getOrderStatusClass = status => {
+    return String(
+      status || "PENDING"
+    )
+      .toLowerCase()
+      .replaceAll("_", "-")
+  }
+
+  const getCategoryCount = category => {
+    return products.filter(
+      product =>
+        product.category === category
+    ).length
+  }
+
+  if (isLoading) {
+    return (
+      <>
+        <SellerHeader />
+
+        <main className="seller-dashboard-loading">
+          <RefreshCw
+            size={42}
+            className="seller-loading-icon"
+          />
+
+          <h2>
+            Loading Seller Dashboard
+          </h2>
+
+          <p>
+            Preparing your farm business overview...
+          </p>
+        </main>
+
+        <Footer />
+      </>
+    )
+  }
+
   return (
-    
-
     <>
-
       <SellerHeader />
 
       <main className="seller-home-dashboard">
 
-        {/* Welcome Section */}
+        {errorMessage && (
+          <div className="seller-dashboard-error">
+            <AlertCircle size={20} />
+
+            <span>
+              {errorMessage}
+            </span>
+
+            <button
+              onClick={fetchDashboardData}
+            >
+              <RefreshCw size={16} />
+              Retry
+            </button>
+          </div>
+        )}
+
+        {/* HERO */}
 
         <section className="seller-welcome-section">
 
@@ -48,24 +256,83 @@ const SellerDashboard = () => {
             </h1>
 
             <p>
-              Connect directly with buyers, showcase your products,
-              and grow your farm business across India.
+              Connect directly with buyers,
+              showcase your products, and grow
+              your farm business across India.
             </p>
 
-            <button
-              className="seller-primary-action"
-              onClick={() =>
-                navigate("/seller/add-product")
-              }
-            >
-              <Plus size={20} />
-              Add New Product
-            </button>
+            <div className="seller-hero-actions">
+
+              <button
+                className="seller-primary-action"
+                onClick={() =>
+                  navigate(
+                    "/seller/add-product"
+                  )
+                }
+              >
+                <Plus size={20} />
+                Add New Product
+              </button>
+
+              <button
+                className="seller-secondary-action"
+                onClick={() =>
+                  navigate(
+                    "/seller/products"
+                  )
+                }
+              >
+                <Package size={19} />
+                Manage Products
+              </button>
+
+            </div>
 
           </div>
 
-
           <div className="seller-welcome-image">
+
+            <div className="seller-dashboard-visual">
+
+              <div className="seller-visual-icon">
+                🌾
+              </div>
+
+              <h3>
+                Your Farm Store
+              </h3>
+
+              <p>
+                Reach more buyers with
+                FarmConnect.
+              </p>
+
+              <div className="seller-visual-stats">
+
+                <div>
+                  <strong>
+                    {totalProducts}
+                  </strong>
+
+                  <span>
+                    Products
+                  </span>
+                </div>
+
+                <div>
+                  <strong>
+                    {totalOrders}
+                  </strong>
+
+                  <span>
+                    Orders
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
 
             <div className="seller-floating-card">
 
@@ -89,8 +356,7 @@ const SellerDashboard = () => {
 
         </section>
 
-
-        {/* Stats */}
+        {/* STATS */}
 
         <section className="seller-stats-section">
 
@@ -107,17 +373,16 @@ const SellerDashboard = () => {
               </span>
 
               <h2>
-                24
+                {totalProducts}
               </h2>
 
               <small>
-                Active listings
+                {availableProducts} active listings
               </small>
 
             </div>
 
           </div>
-
 
           <div className="seller-stat-box">
 
@@ -132,7 +397,7 @@ const SellerDashboard = () => {
               </span>
 
               <h2>
-                86
+                {totalOrders}
               </h2>
 
               <small>
@@ -142,7 +407,6 @@ const SellerDashboard = () => {
             </div>
 
           </div>
-
 
           <div className="seller-stat-box">
 
@@ -157,11 +421,42 @@ const SellerDashboard = () => {
               </span>
 
               <h2>
-                ₹25,480
+                ₹{formatAmount(totalEarnings)}
               </h2>
 
               <small>
-                This month
+                From your orders
+              </small>
+
+            </div>
+
+          </div>
+
+          <div className="seller-stat-box">
+
+            <div className="seller-stat-box-icon">
+              <BarChart3 size={23} />
+            </div>
+
+            <div>
+
+              <span>
+                Store Categories
+              </span>
+
+              <h2>
+                {
+                  new Set(
+                    products.map(
+                      product =>
+                        product.category
+                    )
+                  ).size
+                }
+              </h2>
+
+              <small>
+                Product categories
               </small>
 
             </div>
@@ -170,8 +465,7 @@ const SellerDashboard = () => {
 
         </section>
 
-
-        {/* Store Categories */}
+        {/* STORE CATEGORIES */}
 
         <section className="seller-store-section">
 
@@ -191,7 +485,9 @@ const SellerDashboard = () => {
 
             <button
               onClick={() =>
-                navigate("/seller/products")
+                navigate(
+                  "/seller/products"
+                )
               }
             >
               View All
@@ -200,14 +496,14 @@ const SellerDashboard = () => {
 
           </div>
 
-
           <div className="seller-category-grid">
-
 
             <button
               className="seller-category-card fruits-card"
               onClick={() =>
-                navigate("/seller/add-product")
+                navigate(
+                  "/seller/add-product"
+                )
               }
             >
 
@@ -222,7 +518,9 @@ const SellerDashboard = () => {
                 </h3>
 
                 <p>
-                  Add fresh fruits
+                  {getCategoryCount(
+                    "FRUIT"
+                  )} products
                 </p>
 
               </div>
@@ -231,11 +529,12 @@ const SellerDashboard = () => {
 
             </button>
 
-
             <button
               className="seller-category-card vegetables-card"
               onClick={() =>
-                navigate("/seller/add-product")
+                navigate(
+                  "/seller/add-product"
+                )
               }
             >
 
@@ -250,7 +549,9 @@ const SellerDashboard = () => {
                 </h3>
 
                 <p>
-                  Add farm vegetables
+                  {getCategoryCount(
+                    "VEGETABLE"
+                  )} products
                 </p>
 
               </div>
@@ -259,11 +560,12 @@ const SellerDashboard = () => {
 
             </button>
 
-
             <button
               className="seller-category-card animals-card"
               onClick={() =>
-                navigate("/seller/add-product")
+                navigate(
+                  "/seller/add-product"
+                )
               }
             >
 
@@ -278,7 +580,9 @@ const SellerDashboard = () => {
                 </h3>
 
                 <p>
-                  List farm animals
+                  {getCategoryCount(
+                    "ANIMAL"
+                  )} products
                 </p>
 
               </div>
@@ -287,11 +591,12 @@ const SellerDashboard = () => {
 
             </button>
 
-
             <button
               className="seller-category-card machines-card"
               onClick={() =>
-                navigate("/seller/add-product")
+                navigate(
+                  "/seller/add-product"
+                )
               }
             >
 
@@ -306,7 +611,9 @@ const SellerDashboard = () => {
                 </h3>
 
                 <p>
-                  Sell farm equipment
+                  {getCategoryCount(
+                    "MACHINE"
+                  )} products
                 </p>
 
               </div>
@@ -319,8 +626,7 @@ const SellerDashboard = () => {
 
         </section>
 
-
-        {/* Quick Action Banner */}
+        {/* QUICK ACTION */}
 
         <section className="seller-action-banner">
 
@@ -331,19 +637,22 @@ const SellerDashboard = () => {
             </span>
 
             <h2>
-              Put your farm products in front of more buyers.
+              Put your farm products in front
+              of more buyers.
             </h2>
 
             <p>
-              Add your products today and start connecting
-              with customers directly.
+              Add your products today and start
+              connecting with customers directly.
             </p>
 
           </div>
 
           <button
             onClick={() =>
-              navigate("/seller/add-product")
+              navigate(
+                "/seller/add-product"
+              )
             }
           >
             Add Product
@@ -352,8 +661,7 @@ const SellerDashboard = () => {
 
         </section>
 
-
-        {/* Recent Orders */}
+        {/* RECENT ORDERS */}
 
         <section className="seller-recent-section">
 
@@ -373,7 +681,9 @@ const SellerDashboard = () => {
 
             <button
               onClick={() =>
-                navigate("/seller/orders")
+                navigate(
+                  "/seller/orders"
+                )
               }
             >
               View Orders
@@ -382,96 +692,92 @@ const SellerDashboard = () => {
 
           </div>
 
+          {recentOrders.length === 0 ? (
 
-          <div className="seller-recent-orders">
+            <div className="seller-empty-orders">
 
-            <div className="seller-order-item">
+              <ShoppingBag size={42} />
 
-              <div className="seller-order-product-icon">
-                🍅
-              </div>
+              <h3>
+                No orders yet
+              </h3>
 
-              <div className="seller-order-details">
-
-                <strong>
-                  Organic Tomatoes
-                </strong>
-
-                <span>
-                  Order #FC1001 · Hyderabad
-                </span>
-
-              </div>
-
-              <strong>
-                ₹1,280
-              </strong>
-
-              <span className="seller-order-status delivered">
-                Delivered
-              </span>
+              <p>
+                Your recent customer orders
+                will appear here.
+              </p>
 
             </div>
 
+          ) : (
 
-            <div className="seller-order-item">
+            <div className="seller-recent-orders">
 
-              <div className="seller-order-product-icon">
-                🍎
-              </div>
+              {recentOrders.map(
+                order => (
 
-              <div className="seller-order-details">
+                  <div
+                    className="seller-order-item"
+                    key={
+                      order.id ||
+                      order.order_id
+                    }
+                  >
 
-                <strong>
-                  Fresh Apples
-                </strong>
+                    <div className="seller-order-product-icon">
+                      📦
+                    </div>
 
-                <span>
-                  Order #FC1002 · Bengaluru
-                </span>
+                    <div className="seller-order-details">
 
-              </div>
+                      <strong>
+                        Order #
+                        {order.order_id ||
+                          order.id}
+                      </strong>
 
-              <strong>
-                ₹2,450
-              </strong>
+                      <span>
+                        {order.created_at
+                          ? new Date(
+                              order.created_at
+                            ).toLocaleDateString(
+                              "en-IN"
+                            )
+                          : "Recent order"}
+                      </span>
 
-              <span className="seller-order-status processing">
-                Processing
-              </span>
+                    </div>
+
+                    <strong>
+                      ₹
+                      {formatAmount(
+                        order.total_amount ||
+                          order.total
+                      )}
+                    </strong>
+
+                    <span
+                      className={`seller-order-status ${getOrderStatusClass(
+                        order.status
+                      )}`}
+                    >
+                      {String(
+                        order.status ||
+                          "PENDING"
+                      ).replaceAll(
+                        "_",
+                        " "
+                      )}
+                    </span>
+
+                  </div>
+
+                )
+              )}
 
             </div>
 
-
-            <div className="seller-order-item">
-
-              <div className="seller-order-product-icon">
-                🐄
-              </div>
-
-              <div className="seller-order-details">
-
-                <strong>
-                  Farm Cow
-                </strong>
-
-                <span>
-                  Order #FC1003 · Chennai
-                </span>
-
-              </div>
-
-              <strong>
-                ₹48,000
-              </strong>
-
-              <span className="seller-order-status pending">
-                Pending
-              </span>
-
-            </div>
-
-          </div>
+          )}
 
         </section>
 
@@ -480,9 +786,7 @@ const SellerDashboard = () => {
       <Footer />
 
     </>
-
   )
-
 }
 
 export default SellerDashboard

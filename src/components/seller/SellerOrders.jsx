@@ -1,214 +1,299 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import {
   Package,
   User,
   Phone,
   MapPin,
-  CreditCard,
   CalendarDays,
   ChevronDown,
   ChevronUp,
   ShoppingBag,
   Loader,
   AlertCircle,
-  IndianRupee
+  RefreshCw,
+  IndianRupee,
+  CreditCard,
+  CheckCircle2
 } from "lucide-react"
+
 import SellerHeader from "./SellerHeader"
+import Footer from "../Footer"
 import "./seller.css"
 
+const API_BASE_URL =
+  "https://farmconnectbackend.onrender.com"
+
 const API_URL =
-  "https://farmconnectbackend.onrender.com/api/orders"
+  `${API_BASE_URL}/api/orders/seller/orders/`
 
 const SellerOrders = () => {
+  const navigate = useNavigate()
+
   const [orders, setOrders] = useState([])
-  const [isLoading, setIsLoading] =
-    useState(true)
-  const [errorMessage, setErrorMessage] =
-    useState("")
-  const [openOrderId, setOpenOrderId] =
-    useState(null)
-
-
-  // =====================================================
-  // GET TOKEN
-  // =====================================================
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [openOrderId, setOpenOrderId] = useState(null)
 
   const getAccessToken = () => {
-    return localStorage.getItem(
-      "accessToken"
-    )
+    return localStorage.getItem("accessToken")
   }
 
-  // =====================================================
-  // FORMAT PRICE
-  // =====================================================
+  const logoutSeller = () => {
+    localStorage.removeItem("accessToken")
+    localStorage.removeItem("refreshToken")
+    localStorage.removeItem("user")
+
+    navigate("/seller/login", {
+      replace: true
+    })
+  }
 
   const formatPrice = value => {
-    const price =
-      Number(value) || 0
+    const price = Number(value) || 0
 
-    return price.toLocaleString(
-      "en-IN",
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }
-    )
+    return price.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
   }
-
-  // =====================================================
-  // FORMAT DATE
-  // =====================================================
 
   const formatDate = date => {
     if (!date) {
       return "Not available"
     }
 
-    return new Date(
-      date
-    ).toLocaleDateString(
-      "en-IN",
-      {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      }
+    const formattedDate = new Date(date)
+
+    if (Number.isNaN(formattedDate.getTime())) {
+      return "Not available"
+    }
+
+    return formattedDate.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    })
+  }
+
+  const getStatusClass = status => {
+    return String(status || "PENDING")
+      .toLowerCase()
+      .replaceAll(" ", "-")
+  }
+
+  const getOrderStatus = order => {
+    return (
+      order.status ||
+      order.order_status ||
+      "PENDING"
     )
   }
 
-  // =====================================================
-  // STATUS CLASS
-  // =====================================================
-
-  const getStatusClass = status => {
+  const getOrderId = order => {
     return (
-      status || "PENDING"
-    ).toLowerCase()
+      order.id ||
+      order.order_id ||
+      `order-${Math.random()}`
+    )
   }
 
+  const getOrderItems = order => {
+    if (Array.isArray(order.items)) {
+      return order.items
+    }
 
-  // =====================================================
-  // FETCH SELLER ORDERS
-  // =====================================================
+    if (Array.isArray(order.order_items)) {
+      return order.order_items
+    }
+
+    if (Array.isArray(order.products)) {
+      return order.products
+    }
+
+    return []
+  }
+
+  const extractOrders = data => {
+    if (Array.isArray(data)) {
+      return data
+    }
+
+    if (Array.isArray(data.results)) {
+      return data.results
+    }
+
+    if (Array.isArray(data.orders)) {
+      return data.orders
+    }
+
+    if (Array.isArray(data.data)) {
+      return data.data
+    }
+
+    return []
+  }
 
   const fetchSellerOrders = async () => {
-    const token =
-      getAccessToken()
+    setIsLoading(true)
+    setErrorMessage("")
 
-    if (!token) {
-      setErrorMessage(
-        "You are not authenticated."
-      )
-      setIsLoading(false)
+    const accessToken = getAccessToken()
+
+    if (!accessToken) {
+      logoutSeller()
       return
     }
 
     try {
-      const response =
-        await fetch(
-          `${API_URL}/seller/orders/`,
-          {
-            method: "GET",
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-              "Content-Type":
-                "application/json"
-            }
-          }
-        )
+      const response = await fetch(API_URL, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        }
+      })
 
-      const data =
-        await response.json()
+      const responseText = await response.text()
 
-      if (!response.ok) {
-        setErrorMessage(
-          data.error ||
-          data.detail ||
-          "Unable to load seller orders."
-        )
+      let data = {}
+
+      try {
+        data = responseText
+          ? JSON.parse(responseText)
+          : {}
+      } catch {
+        data = {}
+      }
+
+      if (response.status === 401) {
+        logoutSeller()
         return
       }
 
-      const orderData =
-        Array.isArray(data)
-          ? data
-          : data.orders || []
+      if (!response.ok) {
+        setErrorMessage(
+          data.detail ||
+          data.error ||
+          data.message ||
+          "Unable to load customer orders."
+        )
 
-      setOrders(orderData)
-    }
-    catch (error) {
+        setOrders([])
+        return
+      }
+
+      const orderList = extractOrders(data)
+
+      setOrders(orderList)
+    } catch (error) {
       console.error(
-        "Seller Orders Error:",
+        "Seller Orders Fetch Error:",
         error
       )
+
       setErrorMessage(
-        "Unable to connect to the server."
+        "Unable to connect to the server. Please try again."
       )
-    }
-    finally {
+    } finally {
       setIsLoading(false)
     }
   }
-
-
-  // =====================================================
-  // LOAD ORDERS
-  // =====================================================
 
   useEffect(() => {
     fetchSellerOrders()
   }, [])
 
-
-  // =====================================================
-  // TOGGLE PRODUCTS
-  // =====================================================
-
   const toggleOrder = orderId => {
-    setOpenOrderId(
-      previousId =>
-        previousId === orderId
-          ? null
-          : orderId
-
+    setOpenOrderId(previousId =>
+      previousId === orderId
+        ? null
+        : orderId
     )
-
   }
 
-  // =====================================================
-  // STATISTICS
-  // =====================================================
+  const totalOrders = orders.length
 
-  const totalOrders =
-    orders.length
+  const pendingOrders = orders.filter(order => {
+    const status = getOrderStatus(order)
 
-  const pendingOrders =
-    orders.filter(
-      order =>
-        order.status === "PENDING"
-    ).length
+    return status === "PENDING"
+  }).length
 
-  const confirmedOrders =
-    orders.filter(
-      order =>
-        order.status === "CONFIRMED"
-    ).length
+  const confirmedOrders = orders.filter(order => {
+    const status = getOrderStatus(order)
 
+    return (
+      status === "CONFIRMED" ||
+      status === "PROCESSING" ||
+      status === "SHIPPED" ||
+      status === "DELIVERED"
+    )
+  }).length
 
-  // =====================================================
-  // LOADING
-  // =====================================================
+  const getCustomerName = order => {
+    return (
+      order.buyer_name ||
+      order.customer_name ||
+      order.buyer?.full_name ||
+      order.customer?.full_name ||
+      order.buyer?.name ||
+      "Customer"
+    )
+  }
+
+  const getCustomerPhone = order => {
+    return (
+      order.phone_number ||
+      order.buyer_phone ||
+      order.customer_phone ||
+      order.buyer?.phone_number ||
+      order.customer?.phone_number ||
+      "Not provided"
+    )
+  }
+
+  const getDeliveryAddress = order => {
+    return (
+      order.delivery_address ||
+      order.address ||
+      order.buyer?.address ||
+      "Address not available"
+    )
+  }
+
+  const getPaymentMethod = order => {
+    return (
+      order.payment_method ||
+      order.payment?.payment_method ||
+      "COD"
+    )
+  }
+
+  const getPaymentStatus = order => {
+    return (
+      order.payment_status ||
+      order.payment?.payment_status ||
+      "PENDING"
+    )
+  }
+
+  const getTotalAmount = order => {
+    return (
+      order.total_amount ||
+      order.total_price ||
+      order.amount ||
+      0
+    )
+  }
 
   if (isLoading) {
     return (
-      <>
+      <div className="seller-orders-page-wrapper">
         <SellerHeader />
 
         <main className="seller-orders-page">
           <div className="seller-orders-loading">
-
             <Loader
               size={42}
               className="seller-loading-icon"
@@ -221,36 +306,29 @@ const SellerOrders = () => {
             <p>
               Please wait while we load your orders.
             </p>
-
           </div>
-
         </main>
-      </>
+
+        <Footer />
+      </div>
     )
   }
 
   return (
-    <>
+    <div className="seller-orders-page-wrapper">
       <SellerHeader />
-
 
       <main className="seller-orders-page">
 
-
-        {/* =====================================================
-            HEADER
-        ===================================================== */}
+        {/* HEADER */}
 
         <section className="seller-orders-header">
+
           <div className="seller-page-title">
+
             <div className="seller-title-icon">
-
-              <ShoppingBag
-                size={28}
-              />
-
+              <ShoppingBag size={28} />
             </div>
-
 
             <div>
               <h1>
@@ -260,44 +338,50 @@ const SellerOrders = () => {
               <p>
                 Manage orders containing your products.
               </p>
-
             </div>
 
           </div>
+
+          <button
+            className="seller-refresh-orders-button"
+            onClick={fetchSellerOrders}
+            disabled={isLoading}
+          >
+            <RefreshCw size={17} />
+            Refresh
+          </button>
+
         </section>
 
-
-        {/* =====================================================
-            ERROR
-        ===================================================== */}
+        {/* ERROR */}
 
         {errorMessage && (
           <div className="seller-orders-error">
-            <AlertCircle
-              size={20}
-            />
+
+            <AlertCircle size={20} />
+
             <span>
               {errorMessage}
             </span>
 
+            <button
+              onClick={fetchSellerOrders}
+            >
+              Try Again
+            </button>
+
           </div>
         )}
 
-
-        {/* =====================================================
-            STATISTICS
-        ===================================================== */}
+        {/* STATISTICS */}
 
         <section className="seller-orders-stats">
+
           <div className="seller-stat-card">
+
             <div className="seller-stat-icon">
-
-              <Package
-                size={22}
-              />
-
+              <Package size={22} />
             </div>
-
 
             <div>
               <span>
@@ -307,21 +391,15 @@ const SellerOrders = () => {
               <strong>
                 {totalOrders}
               </strong>
-
             </div>
 
           </div>
 
-
           <div className="seller-stat-card">
+
             <div className="seller-stat-icon">
-
-              <CalendarDays
-                size={22}
-              />
-
+              <CalendarDays size={22} />
             </div>
-
 
             <div>
               <span>
@@ -331,65 +409,76 @@ const SellerOrders = () => {
               <strong>
                 {pendingOrders}
               </strong>
-
             </div>
 
           </div>
 
-
           <div className="seller-stat-card">
+
             <div className="seller-stat-icon">
-
-              <ShoppingBag
-                size={22}
-              />
-
+              <CheckCircle2 size={22} />
             </div>
-
 
             <div>
               <span>
-                Confirmed Orders
+                Active Orders
               </span>
 
               <strong>
                 {confirmedOrders}
               </strong>
-
             </div>
 
           </div>
+
         </section>
 
+        {/* EMPTY */}
 
-        {/* =====================================================
-            EMPTY
-        ===================================================== */}
+        {!errorMessage &&
+          orders.length === 0 && (
 
-        {orders.length === 0 ? (
-          <section className="seller-empty-orders">
-            <Package
-              size={60}
-            />
+            <section className="seller-empty-orders">
 
-            <h2>
-              No Customer Orders Yet
-            </h2>
+              <Package size={60} />
 
-            <p>
-              When customers buy your products,
-              the orders will appear here.
-            </p>
+              <h2>
+                No Customer Orders Yet
+              </h2>
 
-          </section>
-        ) : (
+              <p>
+                When customers buy your products,
+                their orders will appear here.
+              </p>
 
+              <button
+                className="seller-refresh-orders-button"
+                onClick={fetchSellerOrders}
+              >
+                <RefreshCw size={17} />
+                Refresh Orders
+              </button>
+
+            </section>
+
+          )}
+
+        {/* ORDERS */}
+
+        {orders.length > 0 && (
 
           <section className="seller-orders-list">
+
             {orders.map(order => {
+
               const orderId =
-                order.id ||
-                order.order_id
+                getOrderId(order)
+
+              const status =
+                getOrderStatus(order)
+
+              const items =
+                getOrderItems(order)
 
               const isOpen =
                 openOrderId === orderId
@@ -401,11 +490,10 @@ const SellerOrders = () => {
                   className="seller-order-card"
                 >
 
-                  {/* =================================================
-                      ORDER TOP
-                  ================================================= */}
+                  {/* ORDER HEADER */}
 
                   <div className="seller-order-top">
+
                     <div className="seller-order-id">
 
                       <span>
@@ -413,47 +501,38 @@ const SellerOrders = () => {
                       </span>
 
                       <strong>
-                        {order.order_id}
+                        {order.order_id ||
+                          order.id ||
+                          "Order"}
                       </strong>
 
                     </div>
 
-
                     <span
-                      className={`
-                        seller-order-status
-                        ${getStatusClass(
-                          order.status
-                        )}
-                      `}
+                      className={`seller-order-status ${getStatusClass(status)}`}
                     >
-
-                      {order.status ||
-                        "PENDING"}
-
+                      {status}
                     </span>
 
                   </div>
 
-                  {/* =================================================
-                      ORDER BODY
-                  ================================================= */}
+                  {/* ORDER CONTENT */}
 
                   <div className="seller-order-content">
+
                     {/* CUSTOMER */}
 
                     <div className="customer-section">
+
                       <h3>
                         Customer Information
                       </h3>
 
-
                       <div className="customer-details">
+
                         <div className="customer-detail">
 
-                          <User
-                            size={19}
-                          />
+                          <User size={19} />
 
                           <div>
                             <span>
@@ -461,21 +540,15 @@ const SellerOrders = () => {
                             </span>
 
                             <strong>
-                              {
-                                order.buyer_name ||
-                                "Customer"
-                              }
+                              {getCustomerName(order)}
                             </strong>
-
                           </div>
 
                         </div>
 
                         <div className="customer-detail">
 
-                          <Phone
-                            size={19}
-                          />
+                          <Phone size={19} />
 
                           <div>
                             <span>
@@ -483,21 +556,15 @@ const SellerOrders = () => {
                             </span>
 
                             <strong>
-                              {
-                                order.phone_number ||
-                                "Not provided"
-                              }
+                              {getCustomerPhone(order)}
                             </strong>
-
                           </div>
 
                         </div>
 
                         <div className="customer-detail customer-address">
 
-                          <MapPin
-                            size={19}
-                          />
+                          <MapPin size={19} />
 
                           <div>
                             <span>
@@ -505,34 +572,32 @@ const SellerOrders = () => {
                             </span>
 
                             <strong>
-
-                              {
-                                order.delivery_address ||
-                                "Address not available"
-                              }
-
-                              <br />
-
-                              {
-                                order.city
-                              }
-
-                              {order.city &&
-                                order.state &&
-                                ", "}
-
-                              {
-                                order.state
-                              }
+                              {getDeliveryAddress(order)}
 
                               {(order.city ||
-                                order.state) &&
-                                order.pincode &&
-                                " - "}
+                                order.state ||
+                                order.pincode) && (
+                                <>
 
-                              {
-                                order.pincode
-                              }
+                                  <br />
+
+                                  {order.city}
+
+                                  {order.city &&
+                                    order.state &&
+                                    ", "}
+
+                                  {order.state}
+
+                                  {(order.city ||
+                                    order.state) &&
+                                    order.pincode &&
+                                    " - "}
+
+                                  {order.pincode}
+
+                                </>
+                              )}
 
                             </strong>
 
@@ -547,57 +612,48 @@ const SellerOrders = () => {
                     {/* ORDER SUMMARY */}
 
                     <div className="order-summary-section">
+
                       <h3>
                         Order Summary
                       </h3>
 
-
                       <div className="summary-row">
+
                         <span>
+                          <CreditCard size={16} />
                           Payment Method
                         </span>
 
                         <strong>
-
-                          {
-                            order.payment_method ||
-                            order.payment?.payment_method ||
-                            "COD"
-                          }
-
+                          {getPaymentMethod(order)}
                         </strong>
 
                       </div>
 
                       <div className="summary-row">
+
                         <span>
                           Payment Status
                         </span>
 
                         <strong>
-
-                          {
-                            order.payment_status ||
-                            order.payment?.payment_status ||
-                            "PENDING"
-                          }
-
+                          {getPaymentStatus(order)}
                         </strong>
 
                       </div>
 
                       <div className="summary-total">
+
                         <span>
+                          <IndianRupee size={17} />
                           Order Total
                         </span>
 
                         <strong>
-
                           ₹
                           {formatPrice(
-                            order.total_amount
+                            getTotalAmount(order)
                           )}
-
                         </strong>
 
                       </div>
@@ -606,24 +662,21 @@ const SellerOrders = () => {
 
                   </div>
 
-                  {/* =================================================
-                      FOOTER
-                  ================================================= */}
+                  {/* ORDER FOOTER */}
 
                   <div className="seller-order-footer">
+
                     <div className="order-date">
 
-                      <CalendarDays
-                        size={18}
-                      />
+                      <CalendarDays size={18} />
 
                       <span>
                         Ordered on{" "}
-
                         {formatDate(
-                          order.created_at
+                          order.created_at ||
+                          order.order_date ||
+                          order.created
                         )}
-
                       </span>
 
                     </div>
@@ -634,48 +687,39 @@ const SellerOrders = () => {
                         toggleOrder(orderId)
                       }
                     >
-                      <Package
-                        size={18}
-                      />
+
+                      <Package size={18} />
 
                       {isOpen
                         ? "Hide Products"
-                        : "View Products"}
+                        : `View Products (${items.length})`}
 
                       {isOpen ? (
-
-                        <ChevronUp
-                          size={18}
-                        />
-
+                        <ChevronUp size={18} />
                       ) : (
-
-                        <ChevronDown
-                          size={18}
-                        />
-
+                        <ChevronDown size={18} />
                       )}
 
                     </button>
 
                   </div>
 
-                  {/* =================================================
-                      PRODUCTS
-                  ================================================= */}
+                  {/* PRODUCTS */}
 
                   {isOpen && (
+
                     <div className="seller-products-section">
 
                       <h3>
                         Products in This Order
                       </h3>
 
+                      {items.length > 0 ? (
 
-                      {order.items &&
-                      order.items.length > 0 ? (
                         <div className="seller-products-list">
-                          {order.items.map(item => {
+
+                          {items.map((item, index) => {
+
                             const quantity =
                               Number(
                                 item.quantity
@@ -683,99 +727,111 @@ const SellerOrders = () => {
 
                             const price =
                               Number(
-                                item.price
+                                item.price ||
+                                item.unit_price
                               ) || 0
 
                             const subtotal =
                               Number(
-                                item.subtotal
+                                item.subtotal ||
+                                item.total
                               ) ||
                               price * quantity
 
+                            const itemId =
+                              item.id ||
+                              item.product_id ||
+                              index
 
                             return (
+
                               <div
-                                key={item.id}
+                                key={itemId}
                                 className="seller-product-item"
                               >
 
                                 <img
                                   src={
                                     item.product_image ||
+                                    item.image_url ||
                                     "/placeholder.png"
                                   }
                                   alt={
-                                    item.product_name
+                                    item.product_name ||
+                                    item.name ||
+                                    "Product"
                                   }
+                                  onError={event => {
+                                    event.currentTarget.src =
+                                      "/placeholder.png"
+                                  }}
                                 />
 
                                 <div className="seller-product-info">
+
                                   <strong>
-                                    {
-                                      item.product_name ||
-                                      "Product"
-                                    }
+                                    {item.product_name ||
+                                      item.name ||
+                                      "Product"}
                                   </strong>
 
                                   <span>
-                                    Quantity:{" "}
-                                    {quantity}
+                                    Quantity: {quantity}
                                   </span>
 
                                   <span>
                                     Price: ₹
-                                    {formatPrice(
-                                      price
-                                    )}
+                                    {formatPrice(price)}
                                   </span>
 
                                 </div>
 
                                 <div className="seller-product-price">
+
                                   <span>
                                     Subtotal
                                   </span>
 
                                   <strong>
                                     ₹
-                                    {formatPrice(
-                                      subtotal
-                                    )}
+                                    {formatPrice(subtotal)}
                                   </strong>
 
                                 </div>
 
                               </div>
-                            )
 
+                            )
                           })}
 
                         </div>
+
                       ) : (
+
                         <p className="no-products">
-
                           Product details are not available.
-
                         </p>
+
                       )}
 
                     </div>
+
                   )}
 
                 </article>
-              )
 
+              )
             })}
 
           </section>
+
         )}
 
       </main>
 
-    </>
+      <Footer />
+    </div>
   )
-
 }
-
 
 export default SellerOrders

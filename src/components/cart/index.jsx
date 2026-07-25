@@ -1,14 +1,24 @@
 import {useEffect, useState} from "react"
 import {useNavigate} from "react-router-dom"
-import {ShoppingCart, Trash2, Plus, Minus, ArrowRight, RefreshCw, AlertCircle} from "lucide-react"
+import {
+  ShoppingCart,
+  Trash2,
+  Plus,
+  Minus,
+  ArrowRight,
+  RefreshCw,
+  AlertCircle
+} from "lucide-react"
 import Header from "../header"
 import Footer from "../Footer"
+import API_BASE_URL from "../../config/api"
 import "./index.css"
 
-const API_URL = "https://farmconnectbackend.onrender.com/api/orders"
+const API_URL = `${API_BASE_URL}/api/orders`
 
 const Cart = () => {
   const navigate = useNavigate()
+
   const [cart, setCart] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState("")
@@ -35,7 +45,7 @@ const Cart = () => {
         {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json"
           }
         }
@@ -47,6 +57,7 @@ const Cart = () => {
         localStorage.removeItem("accessToken")
         localStorage.removeItem("refreshToken")
         localStorage.removeItem("user")
+
         navigate("/login")
         return
       }
@@ -54,8 +65,8 @@ const Cart = () => {
       if (!response.ok) {
         setErrorMessage(
           data.error ||
-          data.detail ||
-          "Unable to load your cart."
+            data.detail ||
+            "Unable to load your cart."
         )
         return
       }
@@ -63,6 +74,7 @@ const Cart = () => {
       setCart(data)
     } catch (error) {
       console.error("Cart Error:", error)
+
       setErrorMessage(
         "Unable to connect to the server. Please try again."
       )
@@ -75,7 +87,10 @@ const Cart = () => {
     fetchCart()
   }, [])
 
-  const updateQuantity = async (itemId, quantity) => {
+  const updateQuantity = async (
+    itemId,
+    quantity
+  ) => {
     if (quantity < 1) {
       return
     }
@@ -94,10 +109,12 @@ const Cart = () => {
         `${API_URL}/cart/items/${itemId}/`,
         {
           method: "PATCH",
+
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json"
           },
+
           body: JSON.stringify({
             quantity
           })
@@ -109,15 +126,22 @@ const Cart = () => {
       if (!response.ok) {
         alert(
           data.error ||
-          "Unable to update quantity."
+            data.detail ||
+            "Unable to update quantity."
         )
         return
       }
 
       await fetchCart()
     } catch (error) {
-      console.error("Update Quantity Error:", error)
-      alert("Unable to connect to the server.")
+      console.error(
+        "Update Quantity Error:",
+        error
+      )
+
+      alert(
+        "Unable to connect to the server."
+      )
     } finally {
       setUpdatingItemId(null)
     }
@@ -144,8 +168,9 @@ const Cart = () => {
         `${API_URL}/cart/items/${itemId}/remove/`,
         {
           method: "DELETE",
+
           headers: {
-            "Authorization": `Bearer ${accessToken}`
+            Authorization: `Bearer ${accessToken}`
           }
         }
       )
@@ -155,23 +180,31 @@ const Cart = () => {
       if (!response.ok) {
         alert(
           data.error ||
-          "Unable to remove product."
+            data.detail ||
+            "Unable to remove product."
         )
         return
       }
 
       await fetchCart()
     } catch (error) {
-      console.error("Remove Cart Item Error:", error)
-      alert("Unable to connect to the server.")
+      console.error(
+        "Remove Cart Item Error:",
+        error
+      )
+
+      alert(
+        "Unable to connect to the server."
+      )
     }
   }
 
-  const totalItems = cart?.items?.reduce(
-    (total, item) =>
-      total + item.quantity,
-    0
-  ) || 0
+  const totalItems =
+    cart?.items?.reduce(
+      (total, item) =>
+        total + item.quantity,
+      0
+    ) || 0
 
   return (
     <>
@@ -272,7 +305,10 @@ const Cart = () => {
 
                     <p>
                       {totalItems} item
-                      {totalItems !== 1 ? "s" : ""} in your cart
+                      {totalItems !== 1
+                        ? "s"
+                        : ""}{" "}
+                      in your cart
                     </p>
                   </div>
                 </div>
@@ -285,8 +321,12 @@ const Cart = () => {
                     >
                       <div className="cart-product-image-wrapper">
                         <img
-                          src={item.product.image_url}
-                          alt={item.product.name}
+                          src={
+                            item.product.image_url
+                          }
+                          alt={
+                            item.product.name
+                          }
                           className="cart-product-image"
                           onError={event => {
                             event.currentTarget.src =
@@ -299,22 +339,34 @@ const Cart = () => {
                         <div className="cart-product-top">
                           <div>
                             <span className="cart-product-category">
-                              {item.product.category}
+                              {
+                                item.product
+                                  .category
+                              }
                             </span>
 
                             <h3>
-                              {item.product.name}
+                              {
+                                item.product
+                                  .name
+                              }
                             </h3>
 
                             <p className="cart-product-location">
-                              📍 {item.product.location}
+                              📍{" "}
+                              {
+                                item.product
+                                  .location
+                              }
                             </p>
                           </div>
 
                           <button
                             className="cart-remove-button"
                             onClick={() =>
-                              removeItem(item.id)
+                              removeItem(
+                                item.id
+                              )
                             }
                             title="Remove product"
                           >
@@ -324,9 +376,13 @@ const Cart = () => {
 
                         <div className="cart-product-bottom">
                           <div className="cart-price">
-                            ₹{Number(
-                              item.product.price
-                            ).toLocaleString("en-IN")}
+                            ₹
+                            {Number(
+                              item.product
+                                .price
+                            ).toLocaleString(
+                              "en-IN"
+                            )}
                           </div>
 
                           <div className="cart-quantity-control">
@@ -334,19 +390,23 @@ const Cart = () => {
                               onClick={() =>
                                 updateQuantity(
                                   item.id,
-                                  item.quantity - 1
+                                  item.quantity -
+                                    1
                                 )
                               }
                               disabled={
-                                item.quantity <= 1 ||
-                                updatingItemId === item.id
+                                item.quantity <=
+                                  1 ||
+                                updatingItemId ===
+                                  item.id
                               }
                             >
                               <Minus size={16} />
                             </button>
 
                             <span>
-                              {updatingItemId === item.id
+                              {updatingItemId ===
+                              item.id
                                 ? "..."
                                 : item.quantity}
                             </span>
@@ -355,11 +415,13 @@ const Cart = () => {
                               onClick={() =>
                                 updateQuantity(
                                   item.id,
-                                  item.quantity + 1
+                                  item.quantity +
+                                    1
                                 )
                               }
                               disabled={
-                                updatingItemId === item.id
+                                updatingItemId ===
+                                item.id
                               }
                             >
                               <Plus size={16} />
@@ -372,9 +434,12 @@ const Cart = () => {
                             </span>
 
                             <strong>
-                              ₹{Number(
+                              ₹
+                              {Number(
                                 item.subtotal
-                              ).toLocaleString("en-IN")}
+                              ).toLocaleString(
+                                "en-IN"
+                              )}
                             </strong>
                           </div>
                         </div>
@@ -401,9 +466,12 @@ const Cart = () => {
                   </span>
 
                   <strong>
-                    ₹{Number(
+                    ₹
+                    {Number(
                       cart.total_amount
-                    ).toLocaleString("en-IN")}
+                    ).toLocaleString(
+                      "en-IN"
+                    )}
                   </strong>
                 </div>
 
@@ -425,9 +493,12 @@ const Cart = () => {
                   </span>
 
                   <strong>
-                    ₹{Number(
+                    ₹
+                    {Number(
                       cart.total_amount
-                    ).toLocaleString("en-IN")}
+                    ).toLocaleString(
+                      "en-IN"
+                    )}
                   </strong>
                 </div>
 
@@ -443,7 +514,9 @@ const Cart = () => {
 
                 <button
                   className="cart-continue-button"
-                  onClick={() => navigate("/")}
+                  onClick={() =>
+                    navigate("/")
+                  }
                 >
                   Continue Shopping
                 </button>

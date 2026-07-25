@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import {useEffect, useRef, useState} from "react"
+import {useNavigate} from "react-router-dom"
 import {
   Bot,
   X,
@@ -11,9 +11,11 @@ import {
   Package,
   ArrowUpRight
 } from "lucide-react"
+import API_BASE_URL from "../../config/api"
 import "./FarmConnectAI.css"
 
-const AI_API_URL = "https://farmconnectbackend.onrender.com/api/ai/recommend/"
+const AI_API_URL =
+  `${API_BASE_URL}/api/ai/recommend/`
 
 
 const FarmConnectAI = () => {
