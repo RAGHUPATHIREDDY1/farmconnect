@@ -42,12 +42,17 @@ import "./App.css"
 
 
 const SellerProtectedRoute = ({ children }) => {
-  const accessToken =
-    localStorage.getItem("accessToken")
+  const accessToken = localStorage.getItem("accessToken")
+  const storedUser = localStorage.getItem("user")
 
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  )
+  let user = null
+
+  try {
+    user = storedUser ? JSON.parse(storedUser) : null
+  } catch (error) {
+    console.error("Invalid user data in localStorage:", error)
+    localStorage.removeItem("user")
+  }
 
   if (
     !accessToken ||
@@ -71,8 +76,6 @@ const App = () => {
     <BrowserRouter>
       <Routes>
 
-        {/* Authentication Routes */}
-
         <Route
           path="/login"
           element={<Login />}
@@ -83,8 +86,6 @@ const App = () => {
           element={<Register />}
         />
 
-
-        {/* Main Marketplace Routes */}
 
         <Route
           path="/"
@@ -132,8 +133,6 @@ const App = () => {
         />
 
 
-        {/* Product Routes */}
-
         <Route
           path="/products/:productId"
           element={
@@ -143,8 +142,6 @@ const App = () => {
           }
         />
 
-
-        {/* Shopping Routes */}
 
         <Route
           path="/cart"
@@ -167,13 +164,12 @@ const App = () => {
         <Route
           path="/checkout"
           element={
-          <ProtectedRoute>
-            <Checkout />
-            </ProtectedRoute>}
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          }
         />
 
-
-        {/* Seller Authentication */}
 
         <Route
           path="/seller/login"
@@ -185,8 +181,6 @@ const App = () => {
           element={<SellerRegister />}
         />
 
-
-        {/* Seller Dashboard Routes */}
 
         <Route
           path="/seller/dashboard"
@@ -234,8 +228,6 @@ const App = () => {
         />
 
 
-        {/* Information Pages */}
-
         <Route
           path="/about"
           element={<About />}
@@ -257,17 +249,12 @@ const App = () => {
         />
 
 
-        {/* 404 Page */}
-
         <Route
           path="*"
           element={<NotFound />}
         />
 
       </Routes>
-
-
-      {/* Global AI Assistant */}
 
       <FarmConnectAI />
 
