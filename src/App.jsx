@@ -20,7 +20,7 @@ import Cart from "./components/cart"
 import Orders from "./components/orders"
 import Checkout from "./components/orders/checkout"
 
-import ProductDetails from "./components/ProductDetails"
+import ProductDetails from "./components/productDetails"
 
 import NotFound from "./components/notfound"
 import About from "./components/about"
